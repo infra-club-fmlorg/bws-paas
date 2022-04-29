@@ -1,0 +1,77 @@
+version: '3.3'
+
+services:
+  ubuntu:
+    container_name: ${USER}-ubuntu
+    image: ubuntu
+    networks:
+      - application-network
+    volumes:
+      - type: volume
+        source: application-incoming
+        target: /queue/incoming
+        volume:
+          nocopy: true
+      - type: volume
+        source: application-active
+        target: /queue/active
+        volume:
+          nocopy: true
+    tty: true
+    entrypoint: [ "/bin/bash" ]
+
+  nginx:
+    container_name: ${USER}-bws-nginx
+    build: ./nginx
+    ports:
+      - ${PORT}:80
+    networks:
+      - application-network
+
+  control-panel-backend:
+    container_name: 1-${USER}-control-panel-backend
+    build: ./control-panel-backend
+    networks:
+      - application-network
+    volumes:
+      - type: volume
+        source: application-incoming
+        target: /uploadfiles
+        volume:
+          nocopy: true
+
+  docker-launcher:
+    container_name: ${USER}-docker-launcher
+    build: ./docker-launcher
+    networks:
+      - application-network
+    volumes:
+      - type: volume
+        source: application-incoming
+        target: /queue/incoming
+        volume:
+          nocopy: true
+      - type: volume
+        source: application-active
+        target: /queue/active
+        volume:
+          nocopy: true
+      - type: bind
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock
+        read_only: true
+    command: [ "${USER}-application-network" ]
+
+networks:
+  application-network:
+    external:
+      name: "${USER}-application-network"
+
+volumes:
+  application-incoming:
+    external:
+      name: "${USER}-application-incoming"
+
+  application-active:
+    external:
+      name: "${USER}-application-active"
