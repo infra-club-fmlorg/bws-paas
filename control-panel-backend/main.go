@@ -12,7 +12,6 @@ import (
 )
 
 func uploadHandler(w http.ResponseWriter, r *http.Request) {
-    fmt.Println("test")
     //省略
     // ------------------------------
     //FormFileの引数はHTML内のform要素のnameと一致している必要があります
@@ -35,7 +34,6 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
     // 保存用ディレクトリ内に新しいファイルを作成します。
     t := time.Now();
     tuki := strconv.Itoa(int(t.Month()))
-    fmt.Println(tuki)
     if len(tuki) == 1{
         tuki = "0" + tuki;
     }

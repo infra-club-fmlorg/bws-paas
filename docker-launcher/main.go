@@ -174,9 +174,11 @@ func startContainer(cli *client.Client, userName string, applicationName string,
 				&timeout,
 			)
 			if err != nil {
+				log.Println("fail to stop container: " + containers[0].ID)
 				return err
 			}
 		}
+		log.Println("success to stop container: " + containers[0].ID)
 
 		err := cli.ContainerRemove(
 			context.Background(),
@@ -184,8 +186,10 @@ func startContainer(cli *client.Client, userName string, applicationName string,
 			types.ContainerRemoveOptions{},
 		)
 		if err != nil {
+			log.Println("fail to remove container: " + containers[0].ID)
 			return err
 		}
+		log.Println("success to remove container: " + containers[0].ID)
 	}
 
 	result, err := cli.ContainerCreate(
@@ -205,8 +209,10 @@ func startContainer(cli *client.Client, userName string, applicationName string,
 		},
 		&network.NetworkingConfig{}, nil, containerName)
 	if err != nil {
+		log.Println("fail to create container: " + fmt.Sprintf("/b2191480-application-active/%s/%s/%s", userName, applicationName, fileName))
 		return err
 	}
+	log.Println("success to create container: " + result.ID)
 
 	networkNameFilter := filters.NewArgs()
 	networkNameFilter.Add("name", os.Args[1])
@@ -214,21 +220,22 @@ func startContainer(cli *client.Client, userName string, applicationName string,
 		Filters: networkNameFilter,
 	})
 	if err != nil {
-		log.Println(err)
 		return err
 	}
-	log.Printf("%#v", networks[0].ID)
 
 	err = cli.NetworkConnect(context.Background(), networks[0].ID, result.ID, &network.EndpointSettings{})
 	if err != nil {
-		log.Println(err)
+		log.Printf("fail to connect network(%s): %s", networks[0].ID, result.ID)
 		return err
 	}
 
 	err = cli.ContainerStart(context.Background(), result.ID, types.ContainerStartOptions{})
 	if err != nil {
+		log.Println("fail to launch container: " + result.ID)
 		return err
 	}
+
+	log.Println("success to launch container: " + result.ID)
 
 	return nil
 }
