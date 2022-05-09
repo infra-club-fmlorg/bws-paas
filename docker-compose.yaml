@@ -43,6 +43,8 @@ services:
   docker-launcher:
     container_name: ${USER}-docker-launcher
     build: ./docker-launcher
+    environment:
+      - EXECUTED_USER=$USER
     networks:
       - application-network
     volumes:

@@ -29,6 +29,7 @@ func main() {
 		log.Println("fail to get docker's network name from command line arguments")
 		return
 	}
+	log.Println("network name: " + os.Args[1])
 
 	path, err := filepath.Abs("/queue/incoming")
 	if err != nil {
@@ -36,9 +37,12 @@ func main() {
 		return
 	}
 
-	log.Println("start")
+	log.Println("start to walk directory: " + path)
 	for {
-		filepath.WalkDir(path, watchDir(cli))
+		err := filepath.WalkDir(path, watchDir(cli))
+		if err != nil {
+			log.Println(err)
+		}
 	}
 }
 
@@ -73,7 +77,7 @@ func activation(cli *client.Client, path string) error {
 	}
 	// log.Printf("file size: %d b\n", fileInfoTarget.Size())
 
-	activeApplicationDirPath, err := filepath.Abs(fmt.Sprintf("./queue/active/%s/%s", userName, applicationName))
+	activeApplicationDirPath, err := filepath.Abs(fmt.Sprintf("/queue/active/%s/%s", userName, applicationName))
 	if err != nil {
 		log.Println(err)
 		return err
@@ -87,7 +91,7 @@ func activation(cli *client.Client, path string) error {
 		log.Printf("fail to mkdir %s\n", activeApplicationDirPath)
 		return err
 	}
-	// log.Printf("success to mkdir %s\n", activeApplicationDirPath)
+	log.Println("success to mkdir: " + activeApplicationDirPath)
 
 	// err = os.Link(path, activeApplicationPath)
 	// if err != nil {
@@ -96,23 +100,27 @@ func activation(cli *client.Client, path string) error {
 	// }
 	newFile, err := os.Create(activeApplicationPath)
 	if err != nil {
-		log.Println(err)
+		log.Printf("fail to cp from %s to %s", path, activeApplicationPath)
 		return err
 	}
+
 	originalFile, err := os.Open(path)
 	if err != nil {
-		log.Println(err)
+		log.Printf("fail to cp from %s to %s", path, activeApplicationPath)
 		return err
 	}
+
 	_, err = io.Copy(newFile, originalFile)
 	if err != nil {
-		log.Println(err)
+		log.Printf("fail to cp from %s to %s", path, activeApplicationPath)
 		return err
 	}
-	// log.Printf("success to cp from %s to %s\n", path, destinationPath)
+	newFile.Close()
+	originalFile.Close()
+	log.Printf("success to cp from %s to %s", path, activeApplicationPath)
 
 	activeApplicationFileInfo, err := os.Stat(activeApplicationPath)
-	if err != nil {
+	if os.IsNotExist(err) {
 		log.Printf("not found %s\n", activeApplicationPath)
 		return err
 	}
@@ -135,18 +143,15 @@ func activation(cli *client.Client, path string) error {
 	}
 
 	defer func() {
-		incomingUserDir := filepath.Dir(filepath.Dir(path))
-		os.RemoveAll(incomingUserDir)
-		err := os.RemoveAll(filepath.Dir(filepath.Dir(path)))
+		err := os.Remove(path)
 		if err != nil {
-			log.Printf("fail to remove %s\n", incomingUserDir)
+			log.Printf("fail to remove %s\n", path)
 		}
-		// log.Printf("success to remove %s\n", targetUserDir)
+		log.Printf("success to remove %s\n", path)
 	}()
 
 	err = startContainer(cli, userName, applicationName, applicationFileName)
 	if err != nil {
-		log.Println(err)
 		return err
 	}
 
@@ -192,24 +197,27 @@ func startContainer(cli *client.Client, userName string, applicationName string,
 		log.Println("success to remove container: " + containers[0].ID)
 	}
 
+	executedUser := os.Getenv("EXECUTED_USER")
+	entryPoint := fmt.Sprintf("/%s-application-active/%s/%s/%s", executedUser, userName, applicationName, fileName)
+
 	result, err := cli.ContainerCreate(
 		context.Background(),
 		&container.Config{
 			Image:      "ubuntu",
-			Entrypoint: []string{fmt.Sprintf("/b2191480-application-active/%s/%s/%s", userName, applicationName, fileName)},
+			Entrypoint: []string{entryPoint},
 		},
 		&container.HostConfig{
 			Mounts: []mount.Mount{
 				{
 					Type:   mount.TypeVolume,
-					Source: "b2191480-application-active",
-					Target: "/b2191480-application-active",
+					Source: fmt.Sprintf("%s-application-active", executedUser),
+					Target: fmt.Sprintf("/%s-application-active", executedUser),
 				},
 			},
 		},
 		&network.NetworkingConfig{}, nil, containerName)
 	if err != nil {
-		log.Println("fail to create container: " + fmt.Sprintf("/b2191480-application-active/%s/%s/%s", userName, applicationName, fileName))
+		log.Println("fail to create container: " + entryPoint)
 		return err
 	}
 	log.Println("success to create container: " + result.ID)
