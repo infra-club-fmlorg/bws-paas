@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"io"
 	"io/fs"
@@ -18,46 +19,91 @@ import (
 	"github.com/docker/docker/client"
 )
 
+/*
+コマンドライン引数のオプションの構造体
+
+network string -- 生成したコンテナを所属させるDocker Network名
+*/
+type Flag struct {
+	network string
+}
+
 func main() {
+	var myFlag Flag
+	// コマンドライン引数のパース
+	flag.StringVar(&myFlag.network, "network", "", "Docker Network Name")
+	flag.Parse()
+
+	//コマンドライン引数のバリデーション
+	if len(myFlag.network) == 0 {
+		log.Fatalln(fmt.Errorf("error: The following required arguments were not provided: \"network name\""))
+		return
+	}
+
+	// Dockerクライアントの生成
 	cli, err := client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
-		log.Println(err)
+		log.Panicln(err)
 		return
 	}
 
-	if len(os.Args) == 1 {
-		log.Println("fail to get docker's network name from command line arguments")
-		return
-	}
-	log.Println("network name: " + os.Args[1])
+	// アプリケーションの一時保管先
+	incomingPath := "/queue/incoming"
+	// activedPath := "queue/active"
 
-	path, err := filepath.Abs("/queue/incoming")
-	if err != nil {
-		log.Println(err)
-		return
-	}
+	/*
+		アプリケーションの本体
 
-	log.Println("start to walk directory: " + path)
+		無限ループの中でWalkDir関数を実行し、新規ファイルの検索を行う
+
+		TODO 無限ループに実行間隔を追加する
+	*/
+	log.Println("start to walk directory: " + incomingPath)
 	for {
-		err := filepath.WalkDir(path, watchDir(cli))
+		err := filepath.WalkDir(incomingPath, createHandleWatchDir(cli))
 		if err != nil {
 			log.Println(err)
 		}
 	}
 }
 
-func watchDir(cli *client.Client) func(path string, entry fs.DirEntry, err error) error {
+/*
+Dockerクライアントを受け取って、WalkDir用の関数を返す高階関数
+
+引数
+cli *client.Client -- Dockerクライアント
+
+返り値
+handlerWalkDir func(path string, entry fs.DirEntry, err error) error -- WalkDir関数ハンドラ
+	引数
+	path string -- 現在のディレクトリ
+	entry fs.DirEntry -- ファイル及びディレクトリの情報
+	err error -- 実行時エラー
+	返り値
+	error -- 実行時エラー
+*/
+func createHandleWatchDir(cli *client.Client) func(path string, entry fs.DirEntry, err error) error {
+	// 無名関数を返す
 	return func(path string, entry fs.DirEntry, err error) error {
+		// 実行時エラーが発生した場合
 		if err != nil {
 			return fmt.Errorf("Error:%s", err)
 		}
 
+		// 処理対象がディレクトリだった場合
 		if entry.IsDir() {
 			return nil
 		}
 
-		log.Println(path)
-		activation(cli, path)
+		// 処理対象がファイルだった場合
+		if entry.Type().IsRegular() {
+			log.Println(path)
+
+			// Docker Containerの起動
+			activation(cli, path)
+			return nil
+		}
+
 		return nil
 	}
 }
