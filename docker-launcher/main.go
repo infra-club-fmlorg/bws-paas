@@ -47,8 +47,10 @@ func main() {
 		return
 	}
 
-	// アプリケーションの一時保管先
+	// アプリケーションの一時保存先
 	incomingPath := "/queue/incoming"
+
+	// 実行したアプリケーションの保存先
 	// activedPath := "queue/active"
 
 	/*
@@ -59,8 +61,9 @@ func main() {
 		TODO 無限ループに実行間隔を追加する
 	*/
 	log.Println("start to walk directory: " + incomingPath)
+	handler := createHandleWalkDir(cli)
 	for {
-		err := filepath.WalkDir(incomingPath, createHandleWatchDir(cli))
+		err := filepath.WalkDir(incomingPath, handler)
 		if err != nil {
 			log.Println(err)
 		}
@@ -74,7 +77,7 @@ Dockerクライアントを受け取って、WalkDir用の関数を返す高階�
 cli *client.Client -- Dockerクライアント
 
 返り値
-handlerWalkDir func(path string, entry fs.DirEntry, err error) error -- WalkDir関数ハンドラ
+handleWalkDir func(path string, entry fs.DirEntry, err error) error -- WalkDir関数ハンドラ
 	引数
 	path string -- 現在のディレクトリ
 	entry fs.DirEntry -- ファイル及びディレクトリの情報
@@ -82,7 +85,7 @@ handlerWalkDir func(path string, entry fs.DirEntry, err error) error -- WalkDir�
 	返り値
 	error -- 実行時エラー
 */
-func createHandleWatchDir(cli *client.Client) func(path string, entry fs.DirEntry, err error) error {
+func createHandleWalkDir(cli *client.Client) func(path string, entry fs.DirEntry, err error) error {
 	// 無名関数を返す
 	return func(path string, entry fs.DirEntry, err error) error {
 		// 実行時エラーが発生した場合
