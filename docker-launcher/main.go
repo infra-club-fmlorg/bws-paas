@@ -19,24 +19,21 @@ import (
 	"github.com/docker/docker/client"
 )
 
-/*
-コマンドライン引数のオプションの構造体
-
-network string -- 生成したコンテナを所属させるDocker Network名
-*/
+// コマンドライン引数のオプションの構造体
 type Flag struct {
+	// network string -- 生成したコンテナを所属させるDocker Network Name
 	network string
 }
 
 func main() {
-	var myFlag Flag
 	// コマンドライン引数のパース
+	var myFlag Flag
 	flag.StringVar(&myFlag.network, "network", "", "Docker Network Name")
 	flag.Parse()
 
 	//コマンドライン引数のバリデーション
 	if len(myFlag.network) == 0 {
-		log.Fatalln(fmt.Errorf("error: The following required arguments were not provided: \"network name\""))
+		log.Fatalln(fmt.Errorf("error: the following required arguments were not provided: --network={Docker Network Name}"))
 		return
 	}
 
@@ -47,11 +44,11 @@ func main() {
 		return
 	}
 
-	// アプリケーションの一時保存先
-	incomingPath := "/queue/incoming"
+	// アプリケーションの一時保存先のルート
+	incomingDirPath := "/queue/incoming"
 
-	// 実行したアプリケーションの保存先
-	// activedPath := "queue/active"
+	// 実行したアプリケーションの保存先のルート
+	// activedDirPath := "/queue/active"
 
 	/*
 		アプリケーションの本体
@@ -60,10 +57,10 @@ func main() {
 
 		TODO 無限ループに実行間隔を追加する
 	*/
-	log.Println("start to walk directory: " + incomingPath)
+	log.Println("start to walk directory: " + incomingDirPath)
 	handler := createHandleWalkDir(cli)
 	for {
-		err := filepath.WalkDir(incomingPath, handler)
+		err := filepath.WalkDir(incomingDirPath, handler)
 		if err != nil {
 			log.Println(err)
 		}
@@ -88,12 +85,10 @@ handleWalkDir func(path string, entry fs.DirEntry, err error) error -- WalkDir�
 func createHandleWalkDir(cli *client.Client) func(path string, entry fs.DirEntry, err error) error {
 	// 無名関数を返す
 	return func(path string, entry fs.DirEntry, err error) error {
-		// 実行時エラーが発生した場合
 		if err != nil {
 			return fmt.Errorf("Error:%s", err)
 		}
 
-		// 処理対象がディレクトリだった場合
 		if entry.IsDir() {
 			return nil
 		}
@@ -102,7 +97,6 @@ func createHandleWalkDir(cli *client.Client) func(path string, entry fs.DirEntry
 		if entry.Type().IsRegular() {
 			log.Println(path)
 
-			// Docker Containerの起動
 			activation(cli, path)
 			return nil
 		}
