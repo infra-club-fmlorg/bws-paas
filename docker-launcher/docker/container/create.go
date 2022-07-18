@@ -2,8 +2,8 @@ package container
 
 import (
 	"context"
-	"docker-launcher/model"
 	network_ "docker-launcher/docker/network"
+	"docker-launcher/model"
 	"fmt"
 
 	"github.com/docker/docker/api/types/container"
@@ -12,9 +12,21 @@ import (
 	"github.com/docker/docker/client"
 )
 
-func CreateContainer(cli *client.Client, app model.Application) (*container.ContainerCreateCreatedBody, error) {
+/*
+コンテナを生成する関数
+
+引数
+cli - Dockerクライアント
+app - アプリケーションの構造体
+
+返り値
+created - 作成したコンテナのID及び警告のポインタ
+error
+*/
+func Create(cli *client.Client, app model.Application) (*container.ContainerCreateCreatedBody, error) {
 	created, err := cli.ContainerCreate(
 		context.Background(),
+		// TODO イメージをビルドする
 		&container.Config{
 			Image:      "ubuntu",
 			Entrypoint: []string{app.AssembleActivePath()},
@@ -24,7 +36,8 @@ func CreateContainer(cli *client.Client, app model.Application) (*container.Cont
 				{
 					Type: mount.TypeVolume,
 					// TODO 設定ファイルから読み込み
-					Source: fmt.Sprintf("application-active"),
+					// TODO Dockerボリュームからホストのボリュームに変更
+					Source: fmt.Sprintf("applicatioan-active"),
 					// TODO 設定ファイルから読み込み
 					Target: "/queue/active",
 				},
@@ -37,15 +50,27 @@ func CreateContainer(cli *client.Client, app model.Application) (*container.Cont
 	return &created, nil
 }
 
-func CreateAndConnectContainer(cli *client.Client, app model.Application, networkID string) (*container.ContainerCreateCreatedBody, error) {
-	created, err := CreateContainer(cli, app)
+/*
+ネットワークに接続済みのコンテナを生成する関数
+
+docker run --network に相当
+
+引数
+cli - Dockerクライアント
+app - アプリケーションの構造体のポインタ
+networkID - DockerネットワークのID
+
+返り値
+*/
+func CreateConnectedNetwork(cli *client.Client, app model.Application, networkID string) (*container.ContainerCreateCreatedBody, error) {
+	created, err := Create(cli, app)
 	if err != nil {
 		return nil, err
 	}
 
-  err = network_.ConnectContainer(cli, networkID, created.ID,&network.EndpointSettings{})
-  if err != nil{
-    return nil, err
-  }
-  return created, nil
+	err = network_.ConnectContainer(cli, networkID, created.ID, &network.EndpointSettings{})
+	if err != nil {
+		return nil, err
+	}
+	return created, nil
 }

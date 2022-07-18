@@ -7,8 +7,18 @@ import (
 	"github.com/docker/docker/client"
 )
 
-func ResetContainerByName(cli *client.Client, name string) error {
-	container, exist, err := FindContainerByName(cli, name)
+/*
+コンテナ名からコンテナ作成のため初期化する関数
+
+引数
+cli - Dockerクライアント
+containerName - Dockerコンテナの名前
+
+返り値
+error
+*/
+func ResetByName(cli *client.Client, containerName string) error {
+	container, exist, err := FindByName(cli, containerName)
 	if err != nil {
 		return err
 	}
@@ -23,5 +33,5 @@ func ResetContainerByName(cli *client.Client, name string) error {
     }
   }
 
-  return StopContainer(cli, container.ID)
+  return Stop(cli, container.ID)
 }
