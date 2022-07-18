@@ -43,7 +43,7 @@ func CreateAndConnectContainer(cli *client.Client, app model.Application, networ
 		return nil, err
 	}
 
-  err = network_.ConnectNetwork(cli, networkID, created.ID,&network.EndpointSettings{})
+  err = network_.ConnectContainer(cli, networkID, created.ID,&network.EndpointSettings{})
   if err != nil{
     return nil, err
   }

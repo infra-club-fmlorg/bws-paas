@@ -8,7 +8,7 @@ import (
 	"github.com/docker/docker/client"
 )
 
-func FindNetworkByName(cli *client.Client, name string) (*types.NetworkResource, bool, error) {
+func FindByName(cli *client.Client, name string) (*types.NetworkResource, bool, error) {
 	networkNameFilter := filters.NewArgs()
 	networkNameFilter.Add("name", name)
 	networks, err := cli.NetworkList(context.Background(), types.NetworkListOptions{
