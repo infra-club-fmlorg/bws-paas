@@ -6,27 +6,35 @@ import (
 	"time"
 )
 
-// 直接生成禁止
+/*
+コンテナで起動するアプリケーションの構造体
+*/
 type Application struct {
-	UserName        string
-	ApplicationName string
-	FileName        string
+	UserName        string // required
+	ApplicationName string // required
+	FileName        string // required
 }
 
-func ParseApplicationFromPath(path string) (Application, error) {
+/*
+アプリケーションのパスからアプリケーションの構造体を生成する関数
+
+引数
+path - アプリケーションのファイルパス
+
+返り値
+app Application - アプリケーションの構造体
+error
+*/
+func ParseApplicationFromPath(path string) (*Application, error) {
 	applicationName := filepath.Dir(path)
 	userName := filepath.Dir(applicationName)
 	if applicationName == "" || userName == "" {
-		return Application{
-			UserName:        userName,
-			ApplicationName: applicationName,
-			FileName:        "",
-		}, fmt.Errorf("error: invalid path")
+		return nil, fmt.Errorf("error: invalid path")
 	}
 
 	fileName := time.Now().UTC().Format(time.RFC3339Nano)
 
-	return Application{
+	return &Application{
 		UserName:        userName,
 		ApplicationName: applicationName,
 		FileName:        fileName,
@@ -34,16 +42,25 @@ func ParseApplicationFromPath(path string) (Application, error) {
 }
 
 // TODO ネームフォーマットの読み込み
+/*
+コンテナ名を組み立てるメソッド
+*/
 func (p *Application) AssembleContainerName() string {
 	return fmt.Sprintf("%s-%s", p.UserName, p.ApplicationName)
 }
 
 // TODO 設定ファイルから読み込み
+/*
+アプリケーションの待機時のパス
+*/
 func (p *Application) AssembleImcomingPath() string {
 	return fmt.Sprintf("/%s/%s/%s", "/queue/imcoiming", p.UserName, p.ApplicationName)
 }
 
 // TODO 設定ファイルから読み込み
+/*
+アプリケーションの保存時のパス
+*/
 func (p *Application) AssembleActivePath() string {
 	return fmt.Sprintf("/%s/%s/%s", "/queue/imcoiming", p.UserName, p.ApplicationName)
 }
