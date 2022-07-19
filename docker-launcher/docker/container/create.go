@@ -3,7 +3,7 @@ package container
 import (
 	"context"
 	network_ "docker-launcher/docker/network"
-	"docker-launcher/model"
+	"docker-launcher/model/application"
 	"fmt"
 
 	"github.com/docker/docker/api/types/container"
@@ -23,7 +23,7 @@ app - アプリケーションの構造体
 created - 作成したコンテナのID及び警告のポインタ
 error
 */
-func Create(cli *client.Client, app model.Application) (*container.ContainerCreateCreatedBody, error) {
+func Create(cli *client.Client, app application.Application) (*container.ContainerCreateCreatedBody, error) {
 	created, err := cli.ContainerCreate(
 		context.Background(),
 		// TODO イメージをビルドする
@@ -62,7 +62,7 @@ networkID - DockerネットワークのID
 
 返り値
 */
-func CreateConnectedNetwork(cli *client.Client, app model.Application, networkID string) (*container.ContainerCreateCreatedBody, error) {
+func CreateConnectedNetwork(cli *client.Client, app application.Application, networkID string) (*container.ContainerCreateCreatedBody, error) {
 	created, err := Create(cli, app)
 	if err != nil {
 		return nil, err
