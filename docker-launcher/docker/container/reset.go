@@ -8,7 +8,9 @@ import (
 )
 
 /*
-コンテナ名からコンテナ作成のため初期化する関数
+コンテナ名から初期化する関数
+
+同名のコンテナが存在すれば停止させた上で削除する。
 
 引数
 cli - Dockerクライアント
@@ -27,11 +29,11 @@ func ResetByName(cli *client.Client, containerName string) error {
 	}
 
   if !IsRemoval(*container){
-     err = cli.ContainerRemove(context.Background(), container.ID,types.ContainerRemoveOptions{})
+    err = Stop(cli, container.ID)
     if err != nil{
       return err
     }
   }
 
-  return Stop(cli, container.ID)
+  return  cli.ContainerRemove(context.Background(), container.ID,types.ContainerRemoveOptions{})
 }
