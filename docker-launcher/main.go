@@ -40,6 +40,16 @@ func main() {
 		return
 	}
 
+	dockerNetwork, exist, err := network.FindByName(cli, myFlag.network)
+	if err != nil {
+		log.Panicln(err)
+		return
+	}
+	if !exist {
+		log.Panicf("not found network: %s\n", myFlag.network)
+		return
+	}
+
 	// アプリケーションの一時保存先のルート
 	incomingDirPath := "/queue/incoming"
 
@@ -51,7 +61,7 @@ func main() {
 		無限ループの中でWalkDir関数を実行し、新規ファイルの検索を行う
 	*/
 	log.Println("start to walk directory: " + incomingDirPath)
-	handler := createHandleWalkDir(cli, myFlag.network)
+	handler := createHandleWalkDir(cli, dockerNetwork.ID)
 	for {
 		err := filepath.WalkDir(incomingDirPath, handler)
 		if err != nil {
@@ -78,7 +88,7 @@ handleWalkDir func(path string, entry fs.DirEntry, err error) error -- WalkDir�
 	返り値
 	error -- 実行時例外
 */
-func createHandleWalkDir(cli *client.Client, networkName string) func(path string, entry fs.DirEntry, err error) error {
+func createHandleWalkDir(cli *client.Client, networkID string) func(path string, entry fs.DirEntry, err error) error {
 	// 無名関数を返す
 	return func(path string, entry fs.DirEntry, err error) error {
 		if err != nil {
@@ -101,17 +111,9 @@ func createHandleWalkDir(cli *client.Client, networkName string) func(path strin
 			return err
 		}
 		containerName := app.AssembleContainerName()
-		incomingPath := fmt.Sprintf("%s/%s", app.AssembleIncomingDirPath() , filepath.Base(path))
+		incomingPath := fmt.Sprintf("%s/%s", app.AssembleIncomingDirPath(), filepath.Base(path))
 		activePath := app.AssembleActivePath()
 		log.Printf("%+v\n", app)
-
-    dockerNetwork, exist, err := network.FindByName(cli, networkName)
-		if err != nil {
-			return err
-		}
-    if !exist {
-      return fmt.Errorf("not found network: %s\n", networkName)
-    }
 
 		container.ResetByName(cli, containerName)
 		if err != nil {
@@ -124,12 +126,16 @@ func createHandleWalkDir(cli *client.Client, networkName string) func(path strin
 			return err
 		}
 		log.Printf("copy to %s from %s\n", activePath, incomingPath)
+    err = os.Chmod(activePath, 0100)
+    if err != nil {
+      return nil
+    }
 
-		created, err := container.CreateConnectedNetwork(cli, *app, dockerNetwork.ID)
+		created, err := container.CreateConnectedNetwork(cli, *app, networkID)
 		if err != nil {
 			return err
 		}
-		log.Printf("create container connected network(%s): %s(%s)\n", dockerNetwork.ID, containerName, created.ID)
+		log.Printf("create container connected network(%s): %s(%s)\n", networkID, containerName, created.ID)
 
 		err = container.Start(cli, created.ID)
 		if err != nil {
@@ -141,7 +147,7 @@ func createHandleWalkDir(cli *client.Client, networkName string) func(path strin
 		if err != nil {
 			return err
 		}
-    log.Printf("remove %s\n", incomingPath)
+		log.Printf("remove %s\n", incomingPath)
 
 		return nil
 	}
