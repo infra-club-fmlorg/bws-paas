@@ -26,8 +26,8 @@ app Application - アプリケーションの構造体
 error
 */
 func ParseApplicationFromPath(path string) (*Application, error) {
-	applicationName := filepath.Dir(path)
-	userName := filepath.Dir(applicationName)
+	applicationName := filepath.Base( filepath.Dir(path) )
+	userName := filepath.Base( filepath.Dir(applicationName) )
 	if applicationName == "" || userName == "" {
 		return nil, fmt.Errorf("error: invalid path")
 	}
