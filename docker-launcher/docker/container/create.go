@@ -37,13 +37,13 @@ func Create(cli *client.Client, app application.Application) (*container.Contain
 					Type: mount.TypeVolume,
 					// TODO 設定ファイルから読み込み
 					// TODO Dockerボリュームからホストのボリュームに変更
-					Source: fmt.Sprintf("applicatioan-active"),
+					Source: fmt.Sprintf("application-active"),
 					// TODO 設定ファイルから読み込み
 					Target: "/queue/active",
 				},
 			},
 		},
-		&network.NetworkingConfig{}, nil, app.FileName)
+		&network.NetworkingConfig{}, nil, app.AssembleContainerName())
 	if err != nil {
 		return nil, err
 	}
