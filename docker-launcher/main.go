@@ -99,31 +99,40 @@ func createHandleWalkDir(cli *client.Client, networkID string) func(path string,
 		if err != nil {
 			return err
 		}
+		containerName := app.AssembleContainerName()
+		incomingPath := app.AssembleIncomingPath()
+		activePath := app.AssembleActivePath()
+		log.Printf("%+v\n", app)
 
-		container.ResetByName(cli, app.AssembleContainerName())
+		container.ResetByName(cli, containerName)
 		if err != nil {
 			return err
 		}
+		log.Printf("reset container: %s\n", containerName)
 
-		err = file.Copy(app.AssembleIncomingPath(), app.AssembleActivePath())
+		err = file.Copy(app.AssembleIncomingPath(), incomingPath)
 		if err != nil {
 			return err
 		}
+		log.Printf("copy to %s from %s\n", activePath, incomingPath)
 
 		created, err := container.CreateConnectedNetwork(cli, *app, networkID)
 		if err != nil {
 			return err
 		}
+		log.Printf("create container connected network(%s): %s(%s)\n", networkID, containerName, created.ID)
 
 		err = container.Start(cli, created.ID)
 		if err != nil {
 			return err
 		}
+		log.Printf("start container: %s(%s)\n", containerName, created.ID)
 
-		err = os.Remove(app.AssembleIncomingPath())
+		err = os.Remove(incomingPath)
 		if err != nil {
 			return err
 		}
+    log.Printf("remove %s\n", incomingPath)
 
 		return nil
 	}
