@@ -100,7 +100,7 @@ func createHandleWalkDir(cli *client.Client, networkID string) func(path string,
 			return err
 		}
 		containerName := app.AssembleContainerName()
-		incomingPath := app.AssembleIncomingPath()
+		incomingPath := fmt.Sprintf("%s/%s", app.AssembleIncomingDirPath() , filepath.Base(path))
 		activePath := app.AssembleActivePath()
 		log.Printf("%+v\n", app)
 
@@ -110,7 +110,7 @@ func createHandleWalkDir(cli *client.Client, networkID string) func(path string,
 		}
 		log.Printf("reset container: %s\n", containerName)
 
-		err = file.Copy(app.AssembleIncomingPath(), incomingPath)
+		err = file.Copy(incomingPath, activePath)
 		if err != nil {
 			return err
 		}

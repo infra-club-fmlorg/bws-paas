@@ -53,8 +53,8 @@ func (p *Application) AssembleContainerName() string {
 /*
 アプリケーションの待機時のパス
 */
-func (p *Application) AssembleIncomingPath() string {
-	return fmt.Sprintf("/queue/incoming/%s/%s",  p.UserName, p.ApplicationName)
+func (p *Application) AssembleIncomingDirPath() string {
+	return fmt.Sprintf("/queue/incoming/%s/%s",  p.UserName, p.ApplicationName )
 }
 
 // TODO 設定ファイルから読み込み
@@ -62,5 +62,5 @@ func (p *Application) AssembleIncomingPath() string {
 アプリケーションの保存時のパス
 */
 func (p *Application) AssembleActivePath() string {
-	return fmt.Sprintf("/queue/active/%s/%s",  p.UserName, p.ApplicationName)
+	return fmt.Sprintf("/queue/active/%s/%s/%s",  p.UserName, p.ApplicationName, p.FileName)
 }
