@@ -27,7 +27,7 @@ error
 */
 func ParseApplicationFromPath(path string) (*Application, error) {
 	applicationName := filepath.Base( filepath.Dir(path) )
-	userName := filepath.Base( filepath.Dir(applicationName) )
+	userName := filepath.Base( filepath.Dir(filepath.Dir(path)) )
 	if applicationName == "" || userName == "" {
 		return nil, fmt.Errorf("error: invalid path")
 	}
