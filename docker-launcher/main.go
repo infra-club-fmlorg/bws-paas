@@ -105,7 +105,7 @@ func createHandleWalkDir(cli *client.Client, networkID string) func(path string,
 			return err
 		}
 
-		err = file.Copy(app.AssembleImcomingPath(), app.AssembleActivePath())
+		err = file.Copy(app.AssembleIncomingPath(), app.AssembleActivePath())
 		if err != nil {
 			return err
 		}
@@ -120,7 +120,7 @@ func createHandleWalkDir(cli *client.Client, networkID string) func(path string,
 			return err
 		}
 
-		err = os.Remove(app.AssembleImcomingPath())
+		err = os.Remove(app.AssembleIncomingPath())
 		if err != nil {
 			return err
 		}
