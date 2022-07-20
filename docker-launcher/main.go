@@ -2,6 +2,7 @@ package main
 
 import (
 	"docker-launcher/docker/container"
+	"docker-launcher/docker/network"
 	"docker-launcher/lib/file"
 	"docker-launcher/model/application"
 	"flag"
@@ -77,7 +78,7 @@ handleWalkDir func(path string, entry fs.DirEntry, err error) error -- WalkDir�
 	返り値
 	error -- 実行時例外
 */
-func createHandleWalkDir(cli *client.Client, networkID string) func(path string, entry fs.DirEntry, err error) error {
+func createHandleWalkDir(cli *client.Client, networkName string) func(path string, entry fs.DirEntry, err error) error {
 	// 無名関数を返す
 	return func(path string, entry fs.DirEntry, err error) error {
 		if err != nil {
@@ -104,6 +105,14 @@ func createHandleWalkDir(cli *client.Client, networkID string) func(path string,
 		activePath := app.AssembleActivePath()
 		log.Printf("%+v\n", app)
 
+    dockerNetwork, exist, err := network.FindByName(cli, networkName)
+		if err != nil {
+			return err
+		}
+    if !exist {
+      return fmt.Errorf("not found network: %s\n", networkName)
+    }
+
 		container.ResetByName(cli, containerName)
 		if err != nil {
 			return err
@@ -116,11 +125,11 @@ func createHandleWalkDir(cli *client.Client, networkID string) func(path string,
 		}
 		log.Printf("copy to %s from %s\n", activePath, incomingPath)
 
-		created, err := container.CreateConnectedNetwork(cli, *app, networkID)
+		created, err := container.CreateConnectedNetwork(cli, *app, dockerNetwork.ID)
 		if err != nil {
 			return err
 		}
-		log.Printf("create container connected network(%s): %s(%s)\n", networkID, containerName, created.ID)
+		log.Printf("create container connected network(%s): %s(%s)\n", dockerNetwork.ID, containerName, created.ID)
 
 		err = container.Start(cli, created.ID)
 		if err != nil {
