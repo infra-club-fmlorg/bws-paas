@@ -30,7 +30,7 @@ func Copy(target string, destination string) error {
 	}
 
   // コピー先の親ディレクトリまで生成
-	err = os.MkdirAll(filepath.Dir(target), 0777)
+	err = os.MkdirAll(filepath.Dir(destination), 0777)
 	if err != nil {
 		return err
 	}
