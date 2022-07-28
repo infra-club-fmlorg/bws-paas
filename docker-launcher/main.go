@@ -40,6 +40,7 @@ func main() {
 		return
 	}
 
+  // 利用するDockerネットワークの取得
 	dockerNetwork, exist, err := network.FindByName(cli, myFlag.network)
 	if err != nil {
 		log.Panicln(err)

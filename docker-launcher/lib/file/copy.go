@@ -19,14 +19,14 @@ destination - コピー先のパス
 返り値
 err
 */
-func Copy(target string, destination string) error {
+func Copy(source string, destination string) error {
   // コピー元がファイルか検証
-	targetFileInfo, err := os.Stat(target)
+	targetFileInfo, err := os.Stat(source)
 	if err != nil {
 		return err
 	}
 	if targetFileInfo.IsDir() {
-		return fmt.Errorf("error: %s is directory", target)
+		return fmt.Errorf("error: %s is directory", source)
 	}
 
   // コピー先の親ディレクトリまで生成
@@ -42,7 +42,7 @@ func Copy(target string, destination string) error {
 	}
 	defer destinationFile.Close()
 
-	targetFile, err := os.Open(target)
+	targetFile, err := os.Open(source)
 	if err != nil {
 		return err
 	}
