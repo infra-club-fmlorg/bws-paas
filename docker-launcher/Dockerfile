@@ -3,8 +3,7 @@ FROM golang:1.18 AS BUILD
 ENV GOPATH=
 
 WORKDIR /go
-COPY main.go /go
-COPY go.mod /go
+COPY . /go
 
 RUN go mod tidy && GOOS=linux go build -o app main.go
 
