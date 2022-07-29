@@ -19,3 +19,18 @@
 ## リファレンス
 
 - [初期デザイン案(2022/03,現在の実装は少し異なります)](doc/design/README.md)
+
+
+### 図(参考,初期デザイン案より,現在の実装は少し異なります)
+
+図(上): ユーザアプリの動作
+(コンテナ,プロトコル,裏側ネットワーク,ストレージ)
+<img src=doc/design/images/bws-paas-userapp.png       width=640px>
+
+図(中): コントロールパネルの動作
+(コンテナ,プロトコル,裏側ネットワーク,ストレージ)
+(注: 裏側のスクリプト部は省略)
+<img src=doc/design/images/bws-paas-control-panel.png width=640px>
+
+図(下): コントロールパネルの動作(詳細)
+<img src=doc/design/images/bws-paas_wholesight.png    width=640px>
