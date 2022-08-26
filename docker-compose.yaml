@@ -27,6 +27,7 @@ services:
       - application-network
 
   control-panel-backend:
+    container_name: 1-control-panel-backend
     build: ./control-panel-backend
     networks:
       - application-network
