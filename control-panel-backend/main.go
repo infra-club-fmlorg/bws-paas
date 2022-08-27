@@ -1,101 +1,84 @@
 package main
 
 import (
-    "time"
-    "path/filepath"
-    "os"
-    "io"
-    "fmt"
-    "log"
-    "net/http"
-    "strconv"
+	"fmt"
+	"io"
+	"log"
+	"net/http"
+	"os"
+	"time"
 )
 
 func uploadHandler(w http.ResponseWriter, r *http.Request) {
-    //省略
-    // ------------------------------
-    //FormFileの引数はHTML内のform要素のnameと一致している必要があります
-    file, fileHeader, err := r.FormFile("userfile")
-    if err != nil {
-        fmt.Println(err)
-        http.Error(w, err.Error(), http.StatusBadRequest)
-        return
-    }
-    defer file.Close()
+	// 入力のバリデーション
+	file, fileHeader, err := r.FormFile("userfile")
+	if err != nil {
+		fmt.Println(err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	defer file.Close()
 
-    // 存在していなければ、保存用のディレクトリを作成します。
-    err = os.MkdirAll(fmt.Sprintf("/uploadfiles/%s/%s", r.FormValue("userid"), r.FormValue("appname")), os.ModePerm)
-    if err != nil {
-        fmt.Println(err)
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
+	userID := r.FormValue("userid")
+	appName := r.FormValue("appname")
+	if len(userID) == 0 || len(appName) == 0 {
+		log.Println("Error:FormValue is Empty")
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
-    // 保存用ディレクトリ内に新しいファイルを作成します。
-    t := time.Now();
-    tuki := strconv.Itoa(int(t.Month()))
-    if len(tuki) == 1{
-        tuki = "0" + tuki;
-    }
-    niti := strconv.Itoa(t.Day());
-    if len(niti) == 1{
-        niti = "0" + niti;
-    }
-    zi := strconv.Itoa(t.Hour());
-    if len(zi) == 1{
-        zi = "0" + zi;
-    }
-    hunn := strconv.Itoa(t.Minute());
-    if len(hunn) == 1{
-        hunn = "0" + hunn;
-    }
-    byou := strconv.Itoa(t.Second());
-    if len(byou) == 1{
-        byou = "0" + byou;
-    }
-    dst, err := os.Create(fmt.Sprintf("/uploadfiles/%s/%s/", r.FormValue("userid"), r.FormValue("appname")) + fmt.Sprintf("%d%s%s%s%s%s%s", t.Year(), tuki, niti, zi, hunn, byou, filepath.Ext(fileHeader.Filename)))
-    if err != nil {
-        fmt.Println(err)
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
+	// 保存用ディレクトリの作成
+	storagePath := fmt.Sprintf("/uploadfiles/%s/%s", userID, appName)
+	err = os.MkdirAll(storagePath, os.ModePerm)
+	if err != nil {
+		fmt.Println(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-    defer dst.Close()
+	// アプリケーションファイルの保存
+	fileName := fileHeader.Filename
+	datetime := time.Now().Format(time.RFC3339Nano)
+	dst, err := os.Create(fmt.Sprintf("%s/%s-%s", storagePath, datetime, fileName))
+	if err != nil {
+		fmt.Println(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer dst.Close()
 
-    // アップロードされたファイルを先程作ったファイルにコピーします。
-    _, err = io.Copy(dst, file)
-    if err != nil {
-        fmt.Println(err)
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
+	_, err = io.Copy(dst, file)
+	if err != nil {
+		fmt.Println(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-    fmt.Fprintf(w, "Upload successful")
+	fmt.Fprintf(w, "Upload successful")
 
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
-    fmt.Fprintf(w, "Hello, World")
+	fmt.Fprintf(w, "Hello, World")
 }
 
 func handler_(w http.ResponseWriter, r *http.Request) {
-    fmt.Fprintf(w, "upload")
+	fmt.Fprintf(w, "upload")
 }
 
-
 func setupRoutes() {
-    mux := http.NewServeMux()
-    mux.HandleFunc("/upload", uploadHandler) // 追加
-    // mux.HandleFunc("/upload", handler_)
-    mux.HandleFunc("/", handler)
+	mux := http.NewServeMux()
+	mux.HandleFunc("/upload", uploadHandler) // 追加
+	// mux.HandleFunc("/upload", handler_)
+	mux.HandleFunc("/", handler)
 
-    if err := http.ListenAndServe(":8080", mux); err != nil {
-        log.Fatal(err)
-    }
+	if err := http.ListenAndServe(":8080", mux); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func main() {
-    fmt.Println("FILE UPLOAD MONITOR")
+	fmt.Println("FILE UPLOAD MONITOR")
 
-    setupRoutes()
+	setupRoutes()
 }
