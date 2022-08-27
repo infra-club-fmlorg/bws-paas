@@ -1,31 +1,40 @@
 <!DOCTYPE html>
 <html lang="ja">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>千歳科学技術大学PaaSサンプルページ</title>
-  <style>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>千歳科学技術大学PaaSサンプルページ</title>
+    <style>
     div {
       margin-bottom: 20px;
     }
-  </style>
-</head>
-<body>
-  <div>
-    <form action="secure.niij.fml.org/api/1/control-panel-backend/upload" method="post" enctype="multipart/form-data">
-      <div>
-        <label>userid:<input type="text" name="userid" required></label>
-      </div>
-      <div>
-        <label>appname:<input type="text" name="appname" required></label>
-      </div>
-      <div>
-        <input type="file" name="userfile" accept="" required>
-      </div>
-      <div>
-        <input type="submit" value="送信する">
-      </div>
-    </form>
-  </div>
-</body>
+    </style>
+  </head>
+  <body>
+    <div>
+      <form action="secure.niij.fml.org/api/1/control-panel-backend/upload" method="post" enctype="multipart/form-data">
+        <div>
+          <label>userid:<input type="text" name="userid" required></label>
+        </div>
+        <div>
+          <label>appname:<input type="text" name="appname" required></label>
+        </div>
+        <div>
+          <label>runtime:
+            <select name="runtime" required>
+              <option value="binary" selected>Single Binary(Golang)</option>
+              <option value="python">Python</option>
+              <option value="nodejs">Node.js</option>
+            </select>
+          </label>
+        </div>
+        <div>
+          <input type="file" name="userfile" accept="" required>
+        </div>
+        <div>
+          <input type="submit" value="送信する">
+        </div>
+      </form>
+    </div>
+  </body>
 </html>
