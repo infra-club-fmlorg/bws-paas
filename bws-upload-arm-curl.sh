@@ -1,0 +1,1 @@
+docker run --rm --network=application-network -v $PWD/serverarm64:/serverarm64 curlimages/curl -H "Host:secure.niij.fml.org" -X POST -F userid=totto -F appname=hello -F runtime=binary -F userfile=@/serverarm64 nginx:80/api/1/control-panel-backend/upload
