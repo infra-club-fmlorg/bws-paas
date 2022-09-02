@@ -31,7 +31,7 @@ func FindByName(cli *client.Client, containerName string) (*types.Container, boo
 		return nil, false, err
 	}
 
-  // コンテナは複数の名前を持てるため、繰り返しで一致するまで探索
+	// コンテナは複数の名前を持てるため、繰り返しで一致するまで探索
 	for _, container := range containers {
 		for _, containerName := range container.Names {
 			if containerName == containerName {

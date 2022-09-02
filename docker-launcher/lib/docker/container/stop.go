@@ -18,7 +18,7 @@ containerID - DockerコンテナのID
 error
 */
 func Stop(cli *client.Client, containerID string) error {
-  // TODO 設定ファイルから読み込み
+	// TODO 設定ファイルから読み込み
 	timeout := time.Duration(500) * time.Millisecond
 	return cli.ContainerStop(
 		context.Background(),

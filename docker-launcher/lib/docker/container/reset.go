@@ -28,12 +28,12 @@ func ResetByName(cli *client.Client, containerName string) error {
 		return nil
 	}
 
-  if !IsRemoval(*container){
-    err = Stop(cli, container.ID)
-    if err != nil{
-      return err
-    }
-  }
+	if !IsRemoval(*container) {
+		err = Stop(cli, container.ID)
+		if err != nil {
+			return err
+		}
+	}
 
-  return  cli.ContainerRemove(context.Background(), container.ID,types.ContainerRemoveOptions{})
+	return cli.ContainerRemove(context.Background(), container.ID, types.ContainerRemoveOptions{})
 }

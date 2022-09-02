@@ -25,5 +25,5 @@ func IsEqualHash(file1 *os.File, file2 *os.File) (bool, error) {
 	hash1 := md5.Sum(buf1.Bytes())
 	hash2 := md5.Sum(buf2.Bytes())
 
-  return bytes.Equal(hash1[:], hash2[:]), nil
+	return bytes.Equal(hash1[:], hash2[:]), nil
 }

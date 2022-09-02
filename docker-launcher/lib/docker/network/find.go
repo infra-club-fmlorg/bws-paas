@@ -8,7 +8,6 @@ import (
 	"github.com/docker/docker/client"
 )
 
-
 /*
 名前からDockerネットワークを検索する関数
 

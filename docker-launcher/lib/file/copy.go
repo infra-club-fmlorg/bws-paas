@@ -20,7 +20,7 @@ destination - コピー先のパス
 err
 */
 func Copy(source string, destination string) error {
-  // コピー元がファイルか検証
+	// コピー元がファイルか検証
 	targetFileInfo, err := os.Stat(source)
 	if err != nil {
 		return err
@@ -29,13 +29,13 @@ func Copy(source string, destination string) error {
 		return fmt.Errorf("error: %s is directory", source)
 	}
 
-  // コピー先の親ディレクトリまで生成
+	// コピー先の親ディレクトリまで生成
 	err = os.MkdirAll(filepath.Dir(destination), 0777)
 	if err != nil {
 		return err
 	}
 
-  // ファイルのコピー処理
+	// ファイルのコピー処理
 	destinationFile, err := os.Create(destination)
 	if err != nil {
 		return err
@@ -53,7 +53,7 @@ func Copy(source string, destination string) error {
 		return err
 	}
 
-  // ファイルのハッシュがコピー前後で同一か検証
+	// ファイルのハッシュがコピー前後で同一か検証
 	bool, err := IsEqualHash(destinationFile, targetFile)
 	if bool {
 		return nil

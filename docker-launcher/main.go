@@ -1,10 +1,10 @@
 package main
 
 import (
-	"docker-launcher/docker/container"
-	"docker-launcher/docker/network"
+	"docker-launcher/lib/application"
+	"docker-launcher/lib/docker/container"
+	"docker-launcher/lib/docker/network"
 	"docker-launcher/lib/file"
-	"docker-launcher/model/application"
 	"flag"
 	"fmt"
 	"io/fs"

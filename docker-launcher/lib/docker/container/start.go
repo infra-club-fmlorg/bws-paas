@@ -18,8 +18,8 @@ containerID - DockerコンテナのID
 error
 */
 func Start(cli *client.Client, containerID string) error {
-  if err := cli.ContainerStart(context.Background(),containerID, types.ContainerStartOptions{}); err !=nil{
-    return err
-  }
-  return nil
+	if err := cli.ContainerStart(context.Background(), containerID, types.ContainerStartOptions{}); err != nil {
+		return err
+	}
+	return nil
 }
