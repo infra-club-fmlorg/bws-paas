@@ -40,7 +40,7 @@ func main() {
 		return
 	}
 
-  // 利用するDockerネットワークの取得
+	// 利用するDockerネットワークの取得
 	dockerNetwork, exist, err := network.FindByName(cli, myFlag.network)
 	if err != nil {
 		log.Panicln(err)
@@ -127,10 +127,10 @@ func createHandleWalkDir(cli *client.Client, networkID string) func(path string,
 			return err
 		}
 		log.Printf("copy to %s from %s\n", activePath, incomingPath)
-    err = os.Chmod(activePath, 0100)
-    if err != nil {
-      return nil
-    }
+		err = os.Chmod(activePath, 0100)
+		if err != nil {
+			return nil
+		}
 
 		created, err := container.CreateConnectedNetwork(cli, *app, networkID)
 		if err != nil {

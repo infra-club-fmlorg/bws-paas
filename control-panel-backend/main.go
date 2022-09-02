@@ -70,10 +70,6 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Upload successful:%s", fileName)
 }
 
-func handler_(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "upload")
-}
-
 func setupRoutes() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/upload", uploadHandler) // 追加
