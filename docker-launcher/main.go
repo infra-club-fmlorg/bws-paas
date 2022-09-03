@@ -107,7 +107,7 @@ func createHandleWalkDir(cli *client.Client, networkID string) func(path string,
 
 		log.Println(path)
 
-		app, err := application.ParseApplicationFromPath(path)
+		app, err := application.ParseApplicationInfoFromPath(path)
 		if err != nil {
 			return err
 		}

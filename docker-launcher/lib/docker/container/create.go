@@ -23,7 +23,7 @@ app - アプリケーションの構造体
 created - 作成したコンテナのID及び警告のポインタ
 error
 */
-func Create(cli *client.Client, app application.Application) (*container.ContainerCreateCreatedBody, error) {
+func Create(cli *client.Client, app application.ApplicationInfo) (*container.ContainerCreateCreatedBody, error) {
 	created, err := cli.ContainerCreate(
 		context.Background(),
 		// TODO イメージをビルドする
@@ -62,7 +62,7 @@ networkID - DockerネットワークのID
 
 返り値
 */
-func CreateConnectedNetwork(cli *client.Client, app application.Application, networkID string) (*container.ContainerCreateCreatedBody, error) {
+func CreateConnectedNetwork(cli *client.Client, app application.ApplicationInfo, networkID string) (*container.ContainerCreateCreatedBody, error) {
 	created, err := Create(cli, app)
 	if err != nil {
 		return nil, err
