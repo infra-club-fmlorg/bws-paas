@@ -3,6 +3,7 @@ package application
 import (
 	"fmt"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -10,26 +11,27 @@ import (
 コンテナで起動するアプリケーションの構造体
 */
 type ApplicationInfo struct {
-	UserName        string `json:"user_name"`        // required
-	ApplicationName string `json:"application_name"` // required
-	FileName        string `json:"file_name"`        // required
-	Runtime         string `json:"runtime"`          // required
+	UserName        string    `json:"user_name"`        // required
+	ApplicationName string    `json:"application_name"` // required
+	Runtime         string    `json:"runtime"`          // required
+	CreatedAt       time.Time `json:"-"`
 }
 
 /*
 ApplicationInfo構造体用のコンストラクタ関数
 */
-func NewApplicationInfo(userName string, applicationName string, fileName string, runtime string) *ApplicationInfo {
+func NewApplicationInfo(userName string, applicationName string, runtime string) *ApplicationInfo {
 	return &ApplicationInfo{
 		UserName:        userName,
 		ApplicationName: applicationName,
-		FileName:        fileName,
 		Runtime:         runtime,
+		CreatedAt:       time.Now(),
 	}
 }
 
 /*
 アプリケーションのパスからアプリケーションの構造体を生成する関数
+{userName}/{appName}/{runtime}-{createdAt}
 
 引数
 path - アプリケーションのファイルパス
@@ -39,18 +41,24 @@ app ApplicationInfo - アプリケーションの構造体
 error
 */
 func ParseApplicationInfoFromPath(path string) (*ApplicationInfo, error) {
+	fileName := filepath.Base(path)
 	applicationName := filepath.Base(filepath.Dir(path))
 	userName := filepath.Base(filepath.Dir(filepath.Dir(path)))
 	if applicationName == "" || userName == "" {
 		return nil, fmt.Errorf("error: invalid path")
 	}
 
-	fileName := time.Now().UTC().Format(time.RFC3339Nano)
+	parsedFileName := strings.Split(fileName, "-")
+	createdAt, err := time.Parse(time.RFC3339Nano, parsedFileName[1])
+	if err != nil {
+		return nil, fmt.Errorf("error:fail parse to RFC3339Nano:%s", parsedFileName[1])
+	}
 
 	return &ApplicationInfo{
 		UserName:        userName,
 		ApplicationName: applicationName,
-		FileName:        fileName,
+		Runtime:         parsedFileName[0],
+		CreatedAt:       createdAt,
 	}, nil
 }
 
@@ -60,6 +68,13 @@ func ParseApplicationInfoFromPath(path string) (*ApplicationInfo, error) {
 */
 func (p *ApplicationInfo) AssembleContainerName() string {
 	return fmt.Sprintf("%s-%s", p.UserName, p.ApplicationName)
+}
+
+/*
+ファイル名を組み立てるメソッド
+*/
+func (p *ApplicationInfo) AssembleFileName() string {
+	return fmt.Sprintf("%s-%s", p.Runtime, p.CreatedAt)
 }
 
 // TODO 設定ファイルから読み込み
@@ -74,6 +89,6 @@ func (p *ApplicationInfo) AssembleIncomingDirPath() string {
 /*
 アプリケーションの保存時のパス
 */
-func (p *ApplicationInfo) AssembleActivePath() string {
-	return fmt.Sprintf("/queue/active/%s/%s/%s", p.UserName, p.ApplicationName, p.FileName)
+func (p *ApplicationInfo) AssembleActiveAppPath() string {
+	return fmt.Sprintf("/queue/active/%s/%s/%s", p.UserName, p.ApplicationName, p.AssembleFileName())
 }

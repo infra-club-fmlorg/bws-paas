@@ -29,7 +29,7 @@ func Create(cli *client.Client, app application.ApplicationInfo) (*container.Con
 		// TODO イメージをビルドする
 		&container.Config{
 			Image:      "ubuntu",
-			Entrypoint: []string{app.AssembleActivePath()},
+			Entrypoint: []string{app.AssembleActiveAppPath()},
 		},
 		&container.HostConfig{
 			Mounts: []mount.Mount{

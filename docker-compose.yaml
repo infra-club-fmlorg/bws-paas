@@ -34,7 +34,7 @@ services:
     volumes:
       - type: volume
         source: application-incoming
-        target: /uploadfiles
+        target: /queue/incoming
         volume:
           nocopy: true
 

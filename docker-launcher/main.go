@@ -61,7 +61,7 @@ func main() {
 		アプリケーションの本体
 		無限ループの中でWalkDir関数を実行し、新規ファイルの検索を行う
 	*/
-	log.Println("start to walk directory: " + incomingDirPath)
+	log.Printf("start to walk directory:%s", incomingDirPath)
 	handler := createHandleWalkDir(cli, dockerNetwork.ID)
 	for {
 		err := filepath.WalkDir(incomingDirPath, handler)
@@ -111,10 +111,11 @@ func createHandleWalkDir(cli *client.Client, networkID string) func(path string,
 		if err != nil {
 			return err
 		}
+
 		containerName := app.AssembleContainerName()
-		incomingPath := fmt.Sprintf("%s/%s", app.AssembleIncomingDirPath(), filepath.Base(path))
-		activePath := app.AssembleActivePath()
-		log.Printf("%+v\n", app)
+		incomingAppPath := fmt.Sprintf("%s/%s", app.AssembleIncomingDirPath(), app.AssembleFileName())
+		activeAppPath := app.AssembleActiveAppPath()
+		log.Printf("%#v\n", app)
 
 		container.ResetByName(cli, containerName)
 		if err != nil {
@@ -122,12 +123,12 @@ func createHandleWalkDir(cli *client.Client, networkID string) func(path string,
 		}
 		log.Printf("reset container: %s\n", containerName)
 
-		err = file.Copy(incomingPath, activePath)
+		err = file.Copy(incomingAppPath, activeAppPath)
 		if err != nil {
 			return err
 		}
-		log.Printf("copy to %s from %s\n", activePath, incomingPath)
-		err = os.Chmod(activePath, 0100)
+		log.Printf("copy to %s from %s\n", activeAppPath, incomingAppPath)
+		err = os.Chmod(activeAppPath, 0100)
 		if err != nil {
 			return nil
 		}
@@ -144,11 +145,11 @@ func createHandleWalkDir(cli *client.Client, networkID string) func(path string,
 		}
 		log.Printf("start container: %s(%s)\n", containerName, created.ID)
 
-		err = os.Remove(incomingPath)
+		err = os.Remove(incomingAppPath)
 		if err != nil {
 			return err
 		}
-		log.Printf("remove %s\n", incomingPath)
+		log.Printf("remove %s\n", incomingAppPath)
 
 		return nil
 	}
