@@ -42,7 +42,7 @@ services:
         target: /socket
 
   docker-launcher:
-    build: ./docker-launcher
+    build: ./container-control
     networks:
       - application-network
     volumes:

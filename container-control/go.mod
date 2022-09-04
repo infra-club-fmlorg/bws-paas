@@ -1,4 +1,4 @@
-module docker-launcher
+module container-controller
 
 go 1.18
 

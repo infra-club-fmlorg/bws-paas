@@ -1,11 +1,11 @@
 package main
 
 import (
-	"docker-launcher/lib/application"
-	"docker-launcher/lib/docker/container"
-	"docker-launcher/lib/docker/network"
-	"docker-launcher/lib/file"
-	unixdomainsocket "docker-launcher/lib/unix-domain-socket"
+	"container-controller/lib/application"
+	"container-controller/lib/docker/container"
+	"container-controller/lib/docker/network"
+	"container-controller/lib/file"
+	unixdomainsocket "container-controller/lib/unix-domain-socket"
 	"encoding/json"
 	"flag"
 	"fmt"
