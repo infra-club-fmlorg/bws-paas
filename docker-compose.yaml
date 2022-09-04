@@ -38,8 +38,8 @@ services:
         volume:
           nocopy: true
       - type: volume
-        source: docker_launcher.sock 
-        target: /var/run/docker_launcher.sock
+        source: socket 
+        target: /socket
 
   docker-launcher:
     build: ./docker-launcher
@@ -57,8 +57,8 @@ services:
         volume:
           nocopy: true
       - type: volume
-        source: docker_launcher.sock 
-        target: /var/run/docker_launcher.sock
+        source: socket 
+        target: /socket
       - type: bind
         source: /var/run/docker.sock
         target: /var/run/docker.sock
@@ -76,4 +76,4 @@ volumes:
   application-active:
     external: true
 
-  docker_launcher.sock:
+  socket:

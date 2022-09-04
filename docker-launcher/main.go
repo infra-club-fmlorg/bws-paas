@@ -19,7 +19,7 @@ import (
 )
 
 const (
-	DOCKER_LAUNCHER_SOCK = "/var/run/docker_launcher.sock"
+	DOCKER_LAUNCHER_SOCK = "/socket/docker_launcher.sock"
 )
 
 // コマンドライン引数の構造体
@@ -62,6 +62,12 @@ func main() {
 
 	// 実行したアプリケーションの保存先のルート
 	// activedDirPath := "/queue/active"
+
+	if _, err := os.Stat(DOCKER_LAUNCHER_SOCK); err == nil {
+		if err := os.RemoveAll(DOCKER_LAUNCHER_SOCK); err != nil {
+			log.Panic(err)
+		}
+	}
 
 	listener, err := net.Listen("unix", DOCKER_LAUNCHER_SOCK)
 	if err != nil {

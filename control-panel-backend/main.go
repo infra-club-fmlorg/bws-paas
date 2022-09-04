@@ -18,7 +18,7 @@ const (
 	BINARY               = "binary"
 	NODE_JS              = "nodejs"
 	PYTHON               = "python"
-	DOCKER_LAUNCHER_SOCK = "/var/run/docker_launcher.sock"
+	DOCKER_LAUNCHER_SOCK = "/socket/docker_launcher.sock"
 	IMCOMINF_QUEUE_DIR   = "/queue/incoming"
 	DATETIME_FORMAT      = time.RFC3339Nano
 )
