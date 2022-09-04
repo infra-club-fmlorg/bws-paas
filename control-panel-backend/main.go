@@ -30,14 +30,13 @@ type ApplicationInfo struct {
 	UserName        string    `json:"user_name"`        // required
 	ApplicationName string    `json:"application_name"` // required
 	Runtime         string    `json:"runtime"`          // required
-	CreatedAt       time.Time `json:"-"`
+	CreatedAt       time.Time `json:"created_at"`
 }
 
 /*
 ApplicationInfo構造体用のコンストラクタ関数
 */
 func NewApplicationInfo(userName string, applicationName string, runtime string) *ApplicationInfo {
-
 	return &ApplicationInfo{
 		UserName:        userName,
 		ApplicationName: applicationName,

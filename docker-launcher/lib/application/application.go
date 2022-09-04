@@ -14,7 +14,7 @@ type ApplicationInfo struct {
 	UserName        string    `json:"user_name"`        // required
 	ApplicationName string    `json:"application_name"` // required
 	Runtime         string    `json:"runtime"`          // required
-	CreatedAt       time.Time `json:"-"`
+	CreatedAt       time.Time `json:"created_at"`
 }
 
 /*
@@ -48,7 +48,7 @@ func ParseApplicationInfoFromPath(path string) (*ApplicationInfo, error) {
 		return nil, fmt.Errorf("error: invalid path")
 	}
 
-	parsedFileName := strings.Split(fileName, "-")
+	parsedFileName := strings.Split(fileName, "_")
 	createdAt, err := time.Parse(time.RFC3339Nano, parsedFileName[1])
 	if err != nil {
 		return nil, fmt.Errorf("error:fail parse to RFC3339Nano:%s", parsedFileName[1])
@@ -74,7 +74,7 @@ func (p *ApplicationInfo) AssembleContainerName() string {
 ファイル名を組み立てるメソッド
 */
 func (p *ApplicationInfo) AssembleFileName() string {
-	return fmt.Sprintf("%s-%s", p.Runtime, p.CreatedAt)
+	return fmt.Sprintf("%s_%s", p.Runtime, p.CreatedAt)
 }
 
 // TODO 設定ファイルから読み込み
