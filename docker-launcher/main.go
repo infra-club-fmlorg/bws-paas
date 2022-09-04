@@ -5,15 +5,21 @@ import (
 	"docker-launcher/lib/docker/container"
 	"docker-launcher/lib/docker/network"
 	"docker-launcher/lib/file"
+	unixdomainsocket "docker-launcher/lib/unix-domain-socket"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"io/fs"
 	"log"
+	"net"
 	"os"
-	"path/filepath"
-	"time"
+	"os/signal"
 
 	"github.com/docker/docker/client"
+)
+
+const (
+	DOCKER_LAUNCHER_SOCK = "/var/run/docker_launcher.sock"
 )
 
 // コマンドライン引数の構造体
@@ -52,25 +58,80 @@ func main() {
 	}
 
 	// アプリケーションの一時保存先のルート
-	incomingDirPath := "/queue/incoming"
+	// incomingDirPath := "/queue/incoming"
 
 	// 実行したアプリケーションの保存先のルート
 	// activedDirPath := "/queue/active"
+
+	listener, err := net.Listen("unix", DOCKER_LAUNCHER_SOCK)
+	if err != nil {
+		log.Panicln(err)
+		return
+	}
+	defer listener.Close()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt)
+
+	go func() {
+		log.Println("container luancher system launched")
+		for {
+			conn, err := listener.Accept()
+			if err != nil {
+				log.Println(err)
+				continue
+			}
+
+			appInfo, err := func() (*application.ApplicationInfo, error) {
+				defer conn.Close()
+
+				m := &unixdomainsocket.Echo{}
+				err := m.Read(conn)
+				if err != nil {
+					log.Println(err)
+					return nil, err
+				}
+
+				appInfo := &application.ApplicationInfo{}
+				err = json.Unmarshal(m.Data, appInfo)
+				if err != nil {
+					log.Println(err)
+					return nil, err
+				}
+				return appInfo, nil
+			}()
+
+			if err != nil {
+				log.Println(err)
+				continue
+			}
+
+			err = dockerContainerRun(cli, dockerNetwork.ID, appInfo)
+			if err != nil {
+				log.Println(err)
+				continue
+			}
+		}
+	}()
+
+	sig := <-quit
+	log.Println(sig)
+	return
 
 	/*
 		アプリケーションの本体
 		無限ループの中でWalkDir関数を実行し、新規ファイルの検索を行う
 	*/
-	log.Printf("start to walk directory:%s", incomingDirPath)
-	handler := createHandleWalkDir(cli, dockerNetwork.ID)
-	for {
-		err := filepath.WalkDir(incomingDirPath, handler)
-		if err != nil {
-			log.Println(err)
-		}
-		// 1秒間隔で全検査
-		time.Sleep(1 * time.Second)
-	}
+	// log.Printf("start to walk directory:%s", incomingDirPath)
+	// handler := createHandleWalkDir(cli, dockerNetwork.ID)
+	// for {
+	// 	err := filepath.WalkDir(incomingDirPath, handler)
+	// 	if err != nil {
+	// 		log.Println(err)
+	// 	}
+	// 	// 1秒間隔で全検査
+	// 	time.Sleep(1 * time.Second)
+	// }
 }
 
 /*
@@ -153,4 +214,48 @@ func createHandleWalkDir(cli *client.Client, networkID string) func(path string,
 
 		return nil
 	}
+}
+
+func dockerContainerRun(cli *client.Client, networkID string, app *application.ApplicationInfo) error {
+	containerName := app.AssembleContainerName()
+	incomingAppPath := fmt.Sprintf("%s/%s", app.AssembleIncomingDirPath(), app.AssembleFileName())
+	activeAppPath := app.AssembleActiveAppPath()
+	log.Printf("%#v\n", app)
+
+	err := container.ResetByName(cli, containerName)
+	if err != nil {
+		return err
+	}
+	log.Printf("reset container: %s\n", containerName)
+
+	err = file.Copy(incomingAppPath, activeAppPath)
+	if err != nil {
+		return err
+	}
+	log.Printf("copy to %s from %s\n", activeAppPath, incomingAppPath)
+	err = os.Chmod(activeAppPath, 0100)
+	if err != nil {
+		return nil
+	}
+
+	created, err := container.CreateConnectedNetwork(cli, *app, networkID)
+	if err != nil {
+		return err
+	}
+	log.Printf("create container connected network(%s): %s(%s)\n", networkID, containerName, created.ID)
+
+	err = container.Start(cli, created.ID)
+	if err != nil {
+		return err
+	}
+	log.Printf("start container: %s(%s)\n", containerName, created.ID)
+
+	err = os.Remove(incomingAppPath)
+	if err != nil {
+		return err
+	}
+	log.Printf("remove %s\n", incomingAppPath)
+
+	return nil
+
 }

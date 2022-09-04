@@ -37,6 +37,9 @@ services:
         target: /queue/incoming
         volume:
           nocopy: true
+      - type: volume
+        source: docker_launcher.sock 
+        target: /var/run/docker_launcher.sock
 
   docker-launcher:
     build: ./docker-launcher
@@ -53,6 +56,9 @@ services:
         target: /queue/active
         volume:
           nocopy: true
+      - type: volume
+        source: docker_launcher.sock 
+        target: /var/run/docker_launcher.sock
       - type: bind
         source: /var/run/docker.sock
         target: /var/run/docker.sock
@@ -69,3 +75,5 @@ volumes:
 
   application-active:
     external: true
+
+  docker_launcher.sock:

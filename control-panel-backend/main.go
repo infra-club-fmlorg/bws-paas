@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -8,13 +10,17 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 )
 
 const (
-	BINARY  = "binary"
-	NODE_JS = "nodejs"
-	PYTHON  = "python"
+	BINARY               = "binary"
+	NODE_JS              = "nodejs"
+	PYTHON               = "python"
+	DOCKER_LAUNCHER_SOCK = "/var/run/docker_launcher.sock"
+	IMCOMINF_QUEUE_DIR   = "/queue/incoming"
+	DATETIME_FORMAT      = time.RFC3339Nano
 )
 
 /*
@@ -45,14 +51,73 @@ func NewApplicationInfo(userName string, applicationName string, runtime string)
 アプリケーションの待機時のパス
 */
 func (p *ApplicationInfo) AssembleIncomingDirPath() string {
-	return fmt.Sprintf("/queue/incoming/%s/%s", p.UserName, p.ApplicationName)
+	return fmt.Sprintf("%s/%s/%s", IMCOMINF_QUEUE_DIR, p.UserName, p.ApplicationName)
 }
 
 /*
 ファイル名を組み立てるメソッド
 */
 func (p *ApplicationInfo) AssembleFileName() string {
-	return fmt.Sprintf("%s-%s-%s-%s", p.UserName, p.ApplicationName, p.Runtime, p.CreatedAt)
+	return strings.Join([]string{p.UserName, p.ApplicationName, p.Runtime, p.CreatedAt.Format(DATETIME_FORMAT)}, "-")
+}
+
+type Echo struct {
+	Length int
+	Data   []byte
+}
+
+func (e *Echo) String() string {
+	return fmt.Sprintf("Length[%02d] Data[%s]", e.Length, e.Data)
+}
+
+func (e *Echo) Write(c net.Conn) error {
+	data := make([]byte, 0, 4+e.Length)
+
+	buf := make([]byte, 4)
+	binary.BigEndian.PutUint32(buf, uint32(e.Length))
+	data = append(data, buf...)
+
+	w := bytes.Buffer{}
+	err := binary.Write(&w, binary.BigEndian, e.Data)
+	if err != nil {
+		return err
+	}
+
+	data = append(data, w.Bytes()...)
+
+	_, err = c.Write(data)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (e *Echo) Read(c net.Conn) error {
+	buf := make([]byte, 4)
+
+	_, err := c.Read(buf)
+	if err != nil {
+		return err
+	}
+
+	byteCount := binary.BigEndian.Uint32(buf)
+	e.Length = int(byteCount)
+	e.Data = make([]byte, e.Length)
+
+	_, err = c.Read(e.Data)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func NewEcho(buf []byte) *Echo {
+	return &Echo{
+		Length: len(buf),
+		Data:   buf,
+	}
 }
 
 func uploadHandler(res http.ResponseWriter, req *http.Request) {
@@ -132,7 +197,7 @@ func uploadHandler(res http.ResponseWriter, req *http.Request) {
 	log.Printf("success save file:%s", filePath)
 
 	// Unix Domain Socket経由でContainer起動サブシステムへ通知
-	conn, err := net.Dial("unix", "/var/run/docker_launcher.sock")
+	conn, err := net.Dial("unix", DOCKER_LAUNCHER_SOCK)
 	if err != nil {
 		log.Println(err)
 		http.Error(res, err.Error(), http.StatusInternalServerError)
@@ -144,8 +209,9 @@ func uploadHandler(res http.ResponseWriter, req *http.Request) {
 		log.Println(err)
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 	}
+	m := NewEcho(json)
 
-	_, err = conn.Write(json)
+	err = m.Write(conn)
 	if err != nil {
 		log.Println(err)
 		http.Error(res, err.Error(), http.StatusInternalServerError)
