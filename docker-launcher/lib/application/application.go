@@ -74,7 +74,7 @@ func (p *ApplicationInfo) AssembleContainerName() string {
 ファイル名を組み立てるメソッド
 */
 func (p *ApplicationInfo) AssembleFileName() string {
-	return fmt.Sprintf("%s_%s", p.Runtime, p.CreatedAt)
+	return fmt.Sprintf("%s_%s", p.Runtime, p.CreatedAt.Format(time.RFC3339Nano))
 }
 
 // TODO 設定ファイルから読み込み
