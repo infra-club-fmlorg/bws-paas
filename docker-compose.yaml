@@ -28,7 +28,7 @@ services:
 
   control-panel-backend:
     container_name: 1-control-panel-backend
-    build: ./control-panel-backend
+    build: ./paas-backend
     networks:
       - application-network
     volumes:
