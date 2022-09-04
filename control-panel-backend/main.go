@@ -21,6 +21,7 @@ const (
 	DOCKER_LAUNCHER_SOCK = "/socket/docker_launcher.sock"
 	IMCOMINF_QUEUE_DIR   = "/queue/incoming"
 	DATETIME_FORMAT      = time.RFC3339Nano
+	FILE_NAME_SEPARATER  = "_"
 )
 
 /*
@@ -57,7 +58,7 @@ func (p *ApplicationInfo) AssembleIncomingDirPath() string {
 ファイル名を組み立てるメソッド
 */
 func (p *ApplicationInfo) AssembleFileName() string {
-	return strings.Join([]string{p.Runtime, p.CreatedAt.Format(DATETIME_FORMAT)}, "-")
+	return strings.Join([]string{p.Runtime, p.CreatedAt.Format(DATETIME_FORMAT)}, FILE_NAME_SEPARATER)
 }
 
 type Echo struct {
