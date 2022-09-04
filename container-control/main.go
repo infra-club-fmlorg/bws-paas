@@ -4,7 +4,6 @@ import (
 	"container-controller/lib/application"
 	"container-controller/lib/docker/container"
 	"container-controller/lib/docker/network"
-	"container-controller/lib/file"
 	unixdomainsocket "container-controller/lib/unix-domain-socket"
 	"encoding/json"
 	"flag"
@@ -112,7 +111,7 @@ func main() {
 				continue
 			}
 
-			err = dockerContainerRun(cli, dockerNetwork.ID, appInfo)
+			err = container.Run(cli, dockerNetwork.ID, appInfo)
 			if err != nil {
 				log.Println(err)
 				continue
@@ -179,89 +178,11 @@ func createHandleWalkDir(cli *client.Client, networkID string) func(path string,
 			return err
 		}
 
-		containerName := app.AssembleContainerName()
-		incomingAppPath := fmt.Sprintf("%s/%s", app.AssembleIncomingDirPath(), app.AssembleFileName())
-		activeAppPath := app.AssembleActiveAppPath()
-		log.Printf("%#v\n", app)
-
-		container.ResetByName(cli, containerName)
+		err = container.Run(cli, networkID, app)
 		if err != nil {
 			return err
 		}
-		log.Printf("reset container: %s\n", containerName)
-
-		err = file.Copy(incomingAppPath, activeAppPath)
-		if err != nil {
-			return err
-		}
-		log.Printf("copy to %s from %s\n", activeAppPath, incomingAppPath)
-		err = os.Chmod(activeAppPath, 0100)
-		if err != nil {
-			return nil
-		}
-
-		created, err := container.CreateConnectedNetwork(cli, *app, networkID)
-		if err != nil {
-			return err
-		}
-		log.Printf("create container connected network(%s): %s(%s)\n", networkID, containerName, created.ID)
-
-		err = container.Start(cli, created.ID)
-		if err != nil {
-			return err
-		}
-		log.Printf("start container: %s(%s)\n", containerName, created.ID)
-
-		err = os.Remove(incomingAppPath)
-		if err != nil {
-			return err
-		}
-		log.Printf("remove %s\n", incomingAppPath)
 
 		return nil
 	}
-}
-
-func dockerContainerRun(cli *client.Client, networkID string, app *application.ApplicationInfo) error {
-	containerName := app.AssembleContainerName()
-	incomingAppPath := fmt.Sprintf("%s/%s", app.AssembleIncomingDirPath(), app.AssembleFileName())
-	activeAppPath := app.AssembleActiveAppPath()
-	log.Printf("%#v\n", app)
-
-	err := container.ResetByName(cli, containerName)
-	if err != nil {
-		return err
-	}
-	log.Printf("reset container: %s\n", containerName)
-
-	err = file.Copy(incomingAppPath, activeAppPath)
-	if err != nil {
-		return err
-	}
-	log.Printf("copy to %s from %s\n", activeAppPath, incomingAppPath)
-	err = os.Chmod(activeAppPath, 0100)
-	if err != nil {
-		return nil
-	}
-
-	created, err := container.CreateConnectedNetwork(cli, *app, networkID)
-	if err != nil {
-		return err
-	}
-	log.Printf("create container connected network(%s): %s(%s)\n", networkID, containerName, created.ID)
-
-	err = container.Start(cli, created.ID)
-	if err != nil {
-		return err
-	}
-	log.Printf("start container: %s(%s)\n", containerName, created.ID)
-
-	err = os.Remove(incomingAppPath)
-	if err != nil {
-		return err
-	}
-	log.Printf("remove %s\n", incomingAppPath)
-
-	return nil
-
 }
