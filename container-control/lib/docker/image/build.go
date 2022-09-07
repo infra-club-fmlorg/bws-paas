@@ -48,22 +48,20 @@ func Build(cli *client.Client, app *application.ApplicationInfo) error {
 }
 
 func getArchivedDockerfile(app *application.ApplicationInfo) (*bytes.Reader, error) {
-	tbuf := new(bytes.Buffer)
+	buf := new(bytes.Buffer)
 	t, err := template.ParseFS(dockerfiles, "static/dockerfile/binary.Dockerfile")
 	if err != nil {
 		return nil, err
 	}
-	t.Execute(tbuf, DockerfileTemplate{
+	t.Execute(buf, DockerfileTemplate{
 		ApplicationPath: app.AssembleActiveAppPath(),
 	})
-	dockerfile := tbuf.Bytes()
 
 	// archive the Dockerfile
 	tarHeader := &tar.Header{
 		Name: "binary",
-		Size: int64(len(dockerfile)),
+		Size: int64(buf.Len()),
 	}
-	buf := new(bytes.Buffer)
 	tw := tar.NewWriter(buf)
 	defer tw.Close()
 	err = tw.WriteHeader(tarHeader)
