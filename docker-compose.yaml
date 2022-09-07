@@ -6,14 +6,15 @@ services:
     networks:
       - application-network
     volumes:
-      - type: volume
-        source: application-incoming
+      - type: bind
+        source: ~/bws-paas-queue/incoming
         target: /queue/incoming
         volume:
           nocopy: true
-      - type: volume
-        source: application-active
+      - type: bind
+        source: ~/bws-paas-queue/active
         target: /queue/active
+        read_only: false
         volume:
           nocopy: true
     tty: true
@@ -32,9 +33,10 @@ services:
     networks:
       - application-network
     volumes:
-      - type: volume
-        source: application-incoming
+      - type: bind
+        source: ~/bws-paas-queue/incoming
         target: /queue/incoming
+        read_only: false
         volume:
           nocopy: true
       - type: volume
@@ -46,19 +48,23 @@ services:
     networks:
       - application-network
     volumes:
-      - type: volume
-        source: application-incoming
+      - type: bind
+        source: ~/bws-paas-queue/incoming
         target: /queue/incoming
         volume:
           nocopy: true
-      - type: volume
-        source: application-active
+      - type: bind
+        source: ~/bws-paas-queue/active
         target: /queue/active
+        read_only: false
         volume:
           nocopy: true
       - type: volume
         source: socket 
         target: /socket
+        read_only: false
+        volume:
+          nocopy: true
       - type: bind
         source: /var/run/docker.sock
         target: /var/run/docker.sock
@@ -70,10 +76,10 @@ networks:
     external: true
 
 volumes:
-  application-incoming:
-    external: true
-
-  application-active:
-    external: true
+  # application-incoming:
+  #   external: true
+  #
+  # application-active:
+  #   external: true
 
   socket:
