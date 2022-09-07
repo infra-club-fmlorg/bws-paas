@@ -2,6 +2,7 @@ package container
 
 import (
 	"container-controller/lib/application"
+	"container-controller/lib/docker/image"
 	"container-controller/lib/file"
 	"fmt"
 	"log"
@@ -32,7 +33,12 @@ func Run(cli *client.Client, networkID string, app *application.ApplicationInfo)
 	log.Printf("copy to %s from %s\n", activeAppPath, incomingAppPath)
 	err = os.Chmod(activeAppPath, 0100)
 	if err != nil {
-		return nil
+		return err
+	}
+
+	err = image.Build(cli, app)
+	if err != nil {
+		return err
 	}
 
 	created, err := CreateConnectedNetwork(cli, *app, networkID)

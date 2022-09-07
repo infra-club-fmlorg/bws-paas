@@ -1,9 +1,9 @@
 package container
 
 import (
-	"context"
 	"container-controller/lib/application"
 	network_ "container-controller/lib/docker/network"
+	"context"
 	"fmt"
 
 	"github.com/docker/docker/api/types/container"
