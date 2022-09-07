@@ -3,6 +3,7 @@ package container
 import (
 	"container-controller/lib/application"
 	"container-controller/lib/docker/image"
+	"container-controller/lib/docker/network"
 	"container-controller/lib/file"
 	"fmt"
 	"log"
@@ -41,7 +42,12 @@ func Run(cli *client.Client, networkID string, app *application.ApplicationInfo)
 		return err
 	}
 
-	created, err := CreateConnectedNetwork(cli, *app, networkID)
+	created, err := CreateFromImage(cli, app)
+	if err != nil {
+		return err
+	}
+
+	err = network.ConnectContainer(cli, networkID, created.ID, nil)
 	if err != nil {
 		return err
 	}

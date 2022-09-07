@@ -49,7 +49,8 @@ func Create(cli *client.Client, app application.ApplicationInfo) (*container.Con
 	return &created, nil
 }
 
-func CreateFromImage(cli *client.Client, imageName string) (*container.ContainerCreateCreatedBody, error) {
+func CreateFromImage(cli *client.Client, app *application.ApplicationInfo) (*container.ContainerCreateCreatedBody, error) {
+	imageName := app.AssembleContainerName()
 	created, err := cli.ContainerCreate(
 		context.Background(),
 		// TODO イメージをビルドする
@@ -78,18 +79,6 @@ networkID - DockerネットワークのID
 */
 func CreateConnectedNetwork(cli *client.Client, app application.ApplicationInfo, networkID string) (*container.ContainerCreateCreatedBody, error) {
 	created, err := Create(cli, app)
-	if err != nil {
-		return nil, err
-	}
-
-	err = network_.ConnectContainer(cli, networkID, created.ID, &network.EndpointSettings{})
-	if err != nil {
-		return nil, err
-	}
-	return created, nil
-}
-func CreateConnectedNetworkFromImage(cli *client.Client, imageName string, networkID string) (*container.ContainerCreateCreatedBody, error) {
-	created, err := CreateFromImage(cli, imageName)
 	if err != nil {
 		return nil, err
 	}

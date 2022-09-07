@@ -5,20 +5,25 @@ import (
 	"bytes"
 	"container-controller/lib/application"
 	"context"
-	_ "embed"
+	"embed"
 	"fmt"
 	"io"
 	"os"
+	"text/template"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
 )
 
 //go:embed static/dockerfile/binary.Dockerfile
-var binaryDockerfile []byte
+var binaryDockerfile embed.FS
+
+type DockerfileTemplate struct {
+	ApplicationPath string
+}
 
 func Build(cli *client.Client, app *application.ApplicationInfo) error {
-	dockerfile, err := getArchivedDockerfile()
+	dockerfile, err := getArchivedDockerfile(app)
 	if err != nil {
 		return err
 	}
@@ -42,20 +47,26 @@ func Build(cli *client.Client, app *application.ApplicationInfo) error {
 	return nil
 }
 
-func getArchivedDockerfile() (*bytes.Reader, error) {
+func getArchivedDockerfile(app *application.ApplicationInfo) (*bytes.Reader, error) {
+	tbuf := new(bytes.Buffer)
+	t, err := template.ParseFS(binaryDockerfile)
+	if err != nil {
+		return nil, err
+	}
+	t.Execute(tbuf, DockerfileTemplate{
+		ApplicationPath: app.AssembleActiveAppPath(),
+	})
+	dockerfile := tbuf.Bytes()
+
 	// archive the Dockerfile
 	tarHeader := &tar.Header{
 		Name: "binary",
-		Size: int64(len(binaryDockerfile)),
+		Size: int64(len(dockerfile)),
 	}
 	buf := new(bytes.Buffer)
 	tw := tar.NewWriter(buf)
 	defer tw.Close()
-	err := tw.WriteHeader(tarHeader)
-	if err != nil {
-		return nil, err
-	}
-	_, err = tw.Write(binaryDockerfile)
+	err = tw.WriteHeader(tarHeader)
 	if err != nil {
 		return nil, err
 	}
