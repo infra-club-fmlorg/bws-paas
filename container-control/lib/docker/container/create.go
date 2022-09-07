@@ -36,7 +36,7 @@ func Create(cli *client.Client, app application.ApplicationInfo) (*container.Con
 					Type: mount.TypeBind,
 					// TODO 設定ファイルから読み込み
 					// TODO Dockerボリュームからホストのボリュームに変更
-					Source: "/tmp/bws-paas-queue/active",
+					Source: app.AssembleActiveTmpDir(),
 					// TODO 設定ファイルから読み込み
 					Target: "/queue/active",
 				},

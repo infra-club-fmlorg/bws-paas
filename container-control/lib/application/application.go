@@ -92,3 +92,10 @@ func (p *ApplicationInfo) AssembleIncomingDirPath() string {
 func (p *ApplicationInfo) AssembleActiveAppPath() string {
 	return fmt.Sprintf("/queue/active/%s/%s/%s", p.UserName, p.ApplicationName, p.AssembleFileName())
 }
+
+func (p *ApplicationInfo) AssembleActiveTmpDir() string {
+	return fmt.Sprintf("/tmp/bws-paas-queue/active")
+}
+func (p *ApplicationInfo) AssembleActiveAppTmpPath() string {
+	return fmt.Sprintf("/tmp/bws-paas-queue/active/%s/%s/%s", p.UserName, p.ApplicationName, p.AssembleFileName())
+}

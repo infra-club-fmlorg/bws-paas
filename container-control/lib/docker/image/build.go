@@ -56,7 +56,7 @@ func getArchivedDockerfile(app *application.ApplicationInfo) (*bytes.Reader, err
 
 	templateBuf := new(bytes.Buffer)
 	t.Execute(templateBuf, DockerfileTemplate{
-		ApplicationPath: app.AssembleActiveAppPath(),
+		ApplicationPath: app.AssembleActiveAppTmpPath(),
 	})
 	b, err := ioutil.ReadAll(templateBuf)
 
