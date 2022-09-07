@@ -36,7 +36,7 @@ func Build(cli *client.Client, app *application.ApplicationInfo) error {
 		types.ImageBuildOptions{
 			Remove:     true,
 			Tags:       []string{name},
-			Dockerfile: "binary",
+			Dockerfile: "Dockerfile",
 		},
 	)
 	if err != nil {
@@ -66,7 +66,7 @@ func getArchivedDockerfile(app *application.ApplicationInfo) (*bytes.Reader, err
 	defer tw.Close()
 
 	tarHeader := &tar.Header{
-		Name: app.AssembleContainerName(),
+		Name: "Dockerfile",
 		Size: int64(len(b)),
 	}
 	err = tw.WriteHeader(tarHeader)
