@@ -8,6 +8,7 @@ import (
 	"embed"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"text/template"
 
@@ -48,23 +49,31 @@ func Build(cli *client.Client, app *application.ApplicationInfo) error {
 }
 
 func getArchivedDockerfile(app *application.ApplicationInfo) (*bytes.Reader, error) {
-	buf := new(bytes.Buffer)
 	t, err := template.ParseFS(dockerfiles, "static/dockerfile/binary.Dockerfile")
 	if err != nil {
 		return nil, err
 	}
-	t.Execute(buf, DockerfileTemplate{
+
+	templateBuf := new(bytes.Buffer)
+	t.Execute(templateBuf, DockerfileTemplate{
 		ApplicationPath: app.AssembleActiveAppPath(),
 	})
+	b, err := ioutil.ReadAll(templateBuf)
 
 	// archive the Dockerfile
-	tarHeader := &tar.Header{
-		Name: "binary",
-		Size: int64(buf.Len()),
-	}
+	buf := new(bytes.Buffer)
 	tw := tar.NewWriter(buf)
 	defer tw.Close()
+
+	tarHeader := &tar.Header{
+		Name: app.AssembleContainerName(),
+		Size: int64(len(b)),
+	}
 	err = tw.WriteHeader(tarHeader)
+	if err != nil {
+		return nil, err
+	}
+	_, err = tw.Write(b)
 	if err != nil {
 		return nil, err
 	}
