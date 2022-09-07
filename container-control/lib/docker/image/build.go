@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"container-controller/lib/application"
 	"context"
+	_ "embed"
 	"fmt"
 	"io"
 	"os"
@@ -13,7 +14,7 @@ import (
 	"github.com/docker/docker/client"
 )
 
-// go:embed static/dockerfile/binary
+//go:embed static/dockerfile/binary.Dockerfile
 var binaryDockerfile []byte
 
 func Build(cli *client.Client, app *application.ApplicationInfo) error {
