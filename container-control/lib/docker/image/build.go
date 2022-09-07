@@ -28,10 +28,6 @@ func Build(cli *client.Client, app *application.ApplicationInfo) error {
 	if err != nil {
 		return err
 	}
-	buildContext, err := getArchiveContextfile(app)
-	if err != nil {
-		return err
-	}
 
 	// TODO コンテキストに関しては要修整
 	name := fmt.Sprintf("%s:%s", app.AssembleContainerName(), "latest")
@@ -42,7 +38,6 @@ func Build(cli *client.Client, app *application.ApplicationInfo) error {
 			Remove:     true,
 			Tags:       []string{name},
 			Dockerfile: "Dockerfile",
-			Context:    buildContext,
 		},
 	)
 	if err != nil {
@@ -54,29 +49,6 @@ func Build(cli *client.Client, app *application.ApplicationInfo) error {
 	return nil
 }
 
-func getArchiveContextfile(app *application.ApplicationInfo) (*bytes.Reader, error) {
-	b, err := ioutil.ReadFile(app.AssembleActiveAppPath())
-
-	buf := new(bytes.Buffer)
-	tw := tar.NewWriter(buf)
-	defer tw.Close()
-
-	tarHeader := &tar.Header{
-		Name: app.AssembleFileName(),
-		Size: int64(len(b)),
-	}
-	err = tw.WriteHeader(tarHeader)
-	if err != nil {
-		return nil, err
-	}
-	_, err = tw.Write(b)
-	if err != nil {
-		return nil, err
-	}
-
-	return bytes.NewReader(buf.Bytes()), nil
-}
-
 func getArchivedDockerfile(app *application.ApplicationInfo) (*bytes.Reader, error) {
 	t, err := template.ParseFS(dockerfiles, "static/dockerfile/binary.Dockerfile")
 	if err != nil {
@@ -85,24 +57,39 @@ func getArchivedDockerfile(app *application.ApplicationInfo) (*bytes.Reader, err
 
 	templateBuf := new(bytes.Buffer)
 	t.Execute(templateBuf, DockerfileTemplate{
-		ApplicationPath: app.AssembleFileName(),
+		ApplicationPath: "application",
 	})
-	b, err := ioutil.ReadAll(templateBuf)
+	dockerfile, err := ioutil.ReadAll(templateBuf)
+	dockerfileHeader := &tar.Header{
+		Name: "Dockerfile",
+		Size: int64(len(dockerfile)),
+	}
+
+	application, err := os.ReadFile(app.AssembleActiveAppPath())
+	applicationHeader := &tar.Header{
+		Name: "application",
+		Size: int64(len(application)),
+	}
 
 	// archive the Dockerfile
 	buf := new(bytes.Buffer)
 	tw := tar.NewWriter(buf)
 	defer tw.Close()
 
-	tarHeader := &tar.Header{
-		Name: "Dockerfile",
-		Size: int64(len(b)),
-	}
-	err = tw.WriteHeader(tarHeader)
+	err = tw.WriteHeader(dockerfileHeader)
 	if err != nil {
 		return nil, err
 	}
-	_, err = tw.Write(b)
+	_, err = tw.Write(dockerfile)
+	if err != nil {
+		return nil, err
+	}
+
+	err = tw.WriteHeader(applicationHeader)
+	if err != nil {
+		return nil, err
+	}
+	_, err = tw.Write(application)
 	if err != nil {
 		return nil, err
 	}
