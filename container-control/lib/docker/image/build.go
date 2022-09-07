@@ -29,14 +29,16 @@ func Build(cli *client.Client, app *application.ApplicationInfo) error {
 		return err
 	}
 
+	// TODO コンテキストに関しては要修整
 	name := fmt.Sprintf("%s:%s", app.AssembleContainerName(), "latest")
 	res, err := cli.ImageBuild(
 		context.Background(),
 		dockerfile,
 		types.ImageBuildOptions{
-			Remove:     true,
-			Tags:       []string{name},
-			Dockerfile: "Dockerfile",
+			Remove:        true,
+			Tags:          []string{name},
+			Dockerfile:    "Dockerfile",
+			RemoteContext: "/",
 		},
 	)
 	if err != nil {
