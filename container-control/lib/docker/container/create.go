@@ -57,7 +57,9 @@ func CreateFromImage(cli *client.Client, app *application.ApplicationInfo) (*con
 		&container.Config{
 			Image: imageName,
 		},
-		&container.HostConfig{},
+		&container.HostConfig{
+			AutoRemove: true,
+		},
 		&network.NetworkingConfig{}, nil, imageName)
 	if err != nil {
 		return nil, err
