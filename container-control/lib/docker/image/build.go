@@ -15,7 +15,7 @@ import (
 	"github.com/docker/docker/client"
 )
 
-//go:embed static/dockerfile
+//go:embed static/dockerfile/binary.Dockerfile
 var dockerfiles embed.FS
 
 type DockerfileTemplate struct {
@@ -49,7 +49,7 @@ func Build(cli *client.Client, app *application.ApplicationInfo) error {
 
 func getArchivedDockerfile(app *application.ApplicationInfo) (*bytes.Reader, error) {
 	tbuf := new(bytes.Buffer)
-	t, err := template.ParseFS(dockerfiles, "dockerfile/binary.Dockerfile")
+	t, err := template.ParseFS(dockerfiles, "static/dockerfile/binary.Dockerfile")
 	if err != nil {
 		return nil, err
 	}
