@@ -1,24 +1,20 @@
 version: '3.3'
 
 services:
-  ubuntu:
-    image: ubuntu
-    networks:
-      - application-network
-    volumes:
-      - type: bind
-        source: ~/bws-paas-queue/incoming
-        target: /queue/incoming
-        volume:
-          nocopy: true
-      - type: bind
-        source: ~/bws-paas-queue/active
-        target: /queue/active
-        read_only: false
-        volume:
-          nocopy: true
-    tty: true
-    entrypoint: [ "/bin/bash" ]
+  #  ubuntu:
+  #    image: ubuntu
+  #    networks:
+  #      - application-network
+  #    volumes:
+  #      - type: bind
+  #        source: ~/bws-paas-queue/incoming
+  #        target: /queue/incoming
+  #      - type: bind
+  #        source: ~/bws-paas-queue/active
+  #        target: /queue/active
+  #        read_only: false
+  #    tty: true
+  #    entrypoint: [ "/bin/bash" ]
 
   nginx:
     build: ./nginx
@@ -37,8 +33,6 @@ services:
         source: ~/bws-paas-queue/incoming
         target: /queue/incoming
         read_only: false
-        volume:
-          nocopy: true
       - type: volume
         source: socket 
         target: /socket
@@ -51,14 +45,10 @@ services:
       - type: bind
         source: ~/bws-paas-queue/incoming
         target: /queue/incoming
-        volume:
-          nocopy: true
       - type: bind
         source: ~/bws-paas-queue/active
         target: /queue/active
         read_only: false
-        volume:
-          nocopy: true
       - type: volume
         source: socket 
         target: /socket
