@@ -30,7 +30,7 @@ func generateNodeJSDockerfile(app *application.ApplicationInfo) ([]byte, *tar.He
 	templateBuf := new(bytes.Buffer)
 	template.Execute(templateBuf, nodeJSDockerfileTemplate{
 		ApplicationName: app.ApplicationName,
-		ApplicationPath: app.AssembleActiveAppPath(),
+		ApplicationPath: app.AssembleFileName(),
 	})
 	dockerfile, err := ioutil.ReadAll(templateBuf)
 	if err != nil {
