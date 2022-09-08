@@ -1,1 +1,0 @@
-docker run --rm --network=application-network -v $PWD/serverx86-64:/serverx86-64 curlimages/curl -H "Host:secure.niij.fml.org" -X POST -F user_name=totto -F application_name=vite-project -F runtime=nodejs -F application_file=@/application.zip nginx:80/api/1/control-panel-backend/upload
