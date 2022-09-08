@@ -17,7 +17,7 @@ import (
 const (
 	BINARY               = "binary"
 	NODE_JS              = "nodejs"
-	PYTHON               = "python"
+	HTML                 = "HTML"
 	DOCKER_LAUNCHER_SOCK = "/socket/docker_launcher.sock"
 	IMCOMINF_QUEUE_DIR   = "/queue/incoming"
 	DATETIME_FORMAT      = time.RFC3339Nano
@@ -147,7 +147,7 @@ func uploadHandler(res http.ResponseWriter, req *http.Request) {
 	}
 
 	switch applicationInfo.Runtime {
-	case BINARY, NODE_JS, PYTHON:
+	case BINARY, NODE_JS, HTML:
 	default:
 		err := fmt.Errorf("Error:environment is not supported")
 		log.Println(err)
