@@ -1,9 +1,6 @@
 package container
 
 import (
-	"context"
-
-	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
 )
 
@@ -35,5 +32,6 @@ func ResetByName(cli *client.Client, containerName string) error {
 		}
 	}
 
-	return cli.ContainerRemove(context.Background(), container.ID, types.ContainerRemoveOptions{})
+	// return cli.ContainerRemove(context.Background(), container.ID, types.ContainerRemoveOptions{})
+	return nil
 }
