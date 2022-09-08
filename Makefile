@@ -1,11 +1,20 @@
 scripts = scripts
 tests = $(scripts)/test
 
-setup:
-	sh $(scripts)/setup.sh
+setup: reset
+	bash $(scripts)/setup.sh
 
-start: setup
+build: setup
+	docker-compose build
+
+up: setup
 	docker-compose up -d
+
+stop:
+	docker-compose stop
+
+reset: test-reset
+	sh $(scripts)/reset.sh
 
 # 以下テスト用
 dev: setup
