@@ -9,11 +9,11 @@ import (
 	"text/template"
 )
 
-//go:embed dockerfile/nodejs.Dockerfile
+//go:embed dockerfile/binary.Dockerfile
 var binaryDockerfiles embed.FS
 
 const (
-	BINARY_DOCKERFILE_PATH = "dockerfile/nodejs.Dockerfile"
+	BINARY_DOCKERFILE_PATH = "dockerfile/binary.Dockerfile"
 )
 
 type binaryDockerfileTemplate struct {
