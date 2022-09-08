@@ -1,6 +1,6 @@
 FROM debian:bullseye-slim
 
-COPY {{.ApplicationPath}} /application
+COPY {{ .ApplicationPath }} /application
 
 RUN chmod 111 /application
 

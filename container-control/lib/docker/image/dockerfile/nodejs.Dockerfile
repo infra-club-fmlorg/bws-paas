@@ -1,6 +1,6 @@
 FROM node:18-buster-slim
 
-COPY {{ ApplicationPath }} /application
+COPY {{ .ApplicationPath }} /application
 
 RUN apt update && apt install -y unzip &&\
     unzip /application &&\
