@@ -30,7 +30,7 @@ services:
       - application-network
     volumes:
       - type: bind
-        source: /tmp/bws-paas-queue/incoming
+        source: ~/bws-paas-queue/incoming
         target: /queue/incoming
         read_only: false
       - type: volume
@@ -43,10 +43,10 @@ services:
       - application-network
     volumes:
       - type: bind
-        source: /tmp/bws-paas-queue/incoming
+        source: ~/bws-paas-queue/incoming
         target: /queue/incoming
       - type: bind
-        source: /tmp/bws-paas-queue/active
+        source: ~/bws-paas-queue/active
         target: /queue/active
         read_only: false
       - type: volume
