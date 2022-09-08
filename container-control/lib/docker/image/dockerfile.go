@@ -18,6 +18,8 @@ func GenerateDockerfile(app *application.ApplicationInfo) ([]byte, *tar.Header, 
 		dockerfile, dockerfileHeader, err = generateBinaryDockerfile(app)
 	case application.NODE_JS:
 		dockerfile, dockerfileHeader, err = generateNodeJSDockerfile(app)
+	case application.HTML:
+		dockerfile, dockerfileHeader, err = generateHTMLDockerfile(app)
 	default:
 		return nil, nil, fmt.Errorf("error: runtime not supported")
 	}
