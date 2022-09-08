@@ -28,7 +28,7 @@ func generateBinaryDockerfile(app *application.ApplicationInfo) ([]byte, *tar.He
 
 	templateBuf := new(bytes.Buffer)
 	template.Execute(templateBuf, binaryDockerfileTemplate{
-		ApplicationPath: app.AssembleFileName(),
+		ApplicationPath: APPLICATION_BUILD_CONTEXT_PATH,
 	})
 	dockerfile, err := ioutil.ReadAll(templateBuf)
 	if err != nil {
