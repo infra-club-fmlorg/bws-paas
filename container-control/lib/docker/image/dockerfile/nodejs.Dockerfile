@@ -1,14 +1,14 @@
 FROM node:18-buster-slim
 
-COPY application.zip /application
+COPY {{ ApplicationPath }} /application
 
 RUN apt update && apt install -y unzip &&\
     unzip /application &&\
-    cd vite-project &&\
+    cd {{ .ApplicationName }} &&\
     npm i &&\
     npm run build
 
-WORKDIR /vite-project
+WORKDIR /{{ .ApplicationName }}
 
 ENTRYPOINT [ "npm", "run", "start" ]
 

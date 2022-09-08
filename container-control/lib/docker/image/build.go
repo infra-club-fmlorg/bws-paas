@@ -1,30 +1,27 @@
 package image
 
 import (
-	"archive/tar"
-	"bytes"
 	"container-controller/lib/application"
 	"context"
-	"embed"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
-	"text/template"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
 )
 
-//go:embed static/dockerfile/binary.Dockerfile
-var dockerfiles embed.FS
-
 type DockerfileTemplate struct {
 	ApplicationPath string
 }
 
+const (
+	DOCKERFILE_BUILD_CONTEXT_PATH  = "Dockerfile"
+	APPLICATION_BUILD_CONTEXT_PATH = "application"
+)
+
 func Build(cli *client.Client, app *application.ApplicationInfo) error {
-	dockerfile, err := getArchivedDockerfile(app)
+	buildContext, err := ArchiveBuildContext(app)
 	if err != nil {
 		return err
 	}
@@ -33,11 +30,11 @@ func Build(cli *client.Client, app *application.ApplicationInfo) error {
 	name := fmt.Sprintf("%s:%s", app.AssembleContainerName(), "latest")
 	res, err := cli.ImageBuild(
 		context.Background(),
-		dockerfile,
+		buildContext,
 		types.ImageBuildOptions{
 			Remove:     true,
 			Tags:       []string{name},
-			Dockerfile: "Dockerfile",
+			Dockerfile: DOCKERFILE_BUILD_CONTEXT_PATH,
 		},
 	)
 	if err != nil {
@@ -47,52 +44,4 @@ func Build(cli *client.Client, app *application.ApplicationInfo) error {
 
 	io.Copy(os.Stdout, res.Body)
 	return nil
-}
-
-func getArchivedDockerfile(app *application.ApplicationInfo) (*bytes.Reader, error) {
-	t, err := template.ParseFS(dockerfiles, "static/dockerfile/binary.Dockerfile")
-	if err != nil {
-		return nil, err
-	}
-
-	templateBuf := new(bytes.Buffer)
-	t.Execute(templateBuf, DockerfileTemplate{
-		ApplicationPath: "application",
-	})
-	dockerfile, err := ioutil.ReadAll(templateBuf)
-	dockerfileHeader := &tar.Header{
-		Name: "Dockerfile",
-		Size: int64(len(dockerfile)),
-	}
-
-	application, err := os.ReadFile(app.AssembleActiveAppPath())
-	applicationHeader := &tar.Header{
-		Name: "application",
-		Size: int64(len(application)),
-	}
-
-	// archive the Dockerfile
-	buf := new(bytes.Buffer)
-	tw := tar.NewWriter(buf)
-	defer tw.Close()
-
-	err = tw.WriteHeader(dockerfileHeader)
-	if err != nil {
-		return nil, err
-	}
-	_, err = tw.Write(dockerfile)
-	if err != nil {
-		return nil, err
-	}
-
-	err = tw.WriteHeader(applicationHeader)
-	if err != nil {
-		return nil, err
-	}
-	_, err = tw.Write(application)
-	if err != nil {
-		return nil, err
-	}
-
-	return bytes.NewReader(buf.Bytes()), nil
 }
