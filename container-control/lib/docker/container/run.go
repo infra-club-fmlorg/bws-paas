@@ -59,12 +59,12 @@ func Run(cli *client.Client, networkID string, app *application.ApplicationInfo)
 	}
 	log.Printf("start container: %s(%s)\n", containerName, created.ID)
 
-	// err = os.Remove(incomingAppPath)
-	// if err != nil {
-	// 	return err
-	// }
-	// log.Printf("remove %s\n", incomingAppPath)
-	//
+	err = os.Remove(incomingAppPath)
+	if err != nil {
+		return err
+	}
+	log.Printf("remove %s\n", incomingAppPath)
+
 	return nil
 
 }
