@@ -1,7 +1,4 @@
 #/bin/bash
-
-source ./.env
-
-docker volume create --name=application-active
-docker volume create --name=application-incoming
 docker network create application-network
+
+mkdir -p /tmp/bws-paas-queue/{active,incoming}
