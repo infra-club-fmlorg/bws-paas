@@ -24,25 +24,22 @@ dev-no-cache: test-reset
 	docker-compose up --build --no-cache
 
 test-reset:
-	sh $(tests)/bws-test-reset.sh
+	sh $(tests)/test-reset.sh
 
 upload-binary:
-	sh $(tests)/bws-upload-curl.sh
+	sh $(tests)/upload-binary.sh
 
 curl-binary:
-	sh $(tests)/bws-test-curl.sh
+	sh $(tests)/test-binary.sh
 
 upload-nodejs:
-	sh $(tests)/bws-upload-nodejs-curl.sh
+	sh $(tests)/upload-nodejs.sh
 
 test-nodejs:
-	sh $(tests)/bws-test-nodejs-curl.sh
-
-archive-html:
-	sh $(tests)/bws-archive-html.sh
+	sh $(tests)/test-nodejs.sh
 
 upload-html:
-	sh $(tests)/bws-upload-html-curl.sh
+	sh $(tests)/upload-html.sh
 	
 curl-html:
-	sh $(tests)/bws-test-html-curl.sh
+	sh $(tests)/test-html.sh
