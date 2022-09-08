@@ -23,11 +23,6 @@ func ArchiveBuildContext(app *application.ApplicationInfo) (*bytes.Reader, error
 		Size: int64(len(applicationFile)),
 	}
 
-	defaultConfHeader := &tar.Header{
-		Name: "default.conf",
-		Size: int64(len(defaultConf)),
-	}
-
 	// archive the Dockerfile
 	buf := new(bytes.Buffer)
 	tw := tar.NewWriter(buf)
@@ -52,6 +47,11 @@ func ArchiveBuildContext(app *application.ApplicationInfo) (*bytes.Reader, error
 	}
 
 	if app.Runtime == application.HTML {
+		defaultConfHeader := &tar.Header{
+			Name: "default.conf",
+			Size: int64(len(defaultConf)),
+		}
+
 		err = tw.WriteHeader(defaultConfHeader)
 		if err != nil {
 			return nil, err
