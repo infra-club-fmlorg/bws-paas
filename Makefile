@@ -1,27 +1,27 @@
 scripts = scripts
 tests = $(scripts)/test
 
-setup: reset
+setup:
 	bash $(scripts)/setup.sh
 
-build: setup
+build:
 	docker-compose build
 
-up: setup
+up:
 	docker-compose up -d
 
 stop:
 	docker-compose stop
 
-reset: test-reset
+reset:
 	sh $(scripts)/reset.sh
 
 # 以下テスト用
-dev: setup
-	docker-compose up --build up
+dev: test-reset
+	docker-compose up --build
 
-dev-no-cache: setup
-	docker-compose up --build --no-cache up
+dev-no-cache: test-reset
+	docker-compose up --build --no-cache
 
 test-reset:
 	sh $(tests)/bws-test-reset.sh
@@ -32,19 +32,16 @@ upload-binary:
 curl-binary:
 	sh $(tests)/bws-test-curl.sh
 
-archive-nodejs:
-	sh $(tests)/bws-archive-nodejs.sh
-
-upload-nodejs: archive-nodejs
+upload-nodejs:
 	sh $(tests)/bws-upload-nodejs-curl.sh
 
-curl-nodejs:
+test-nodejs:
 	sh $(tests)/bws-test-nodejs-curl.sh
 
 archive-html:
 	sh $(tests)/bws-archive-html.sh
 
-upload-html: archive-html
+upload-html:
 	sh $(tests)/bws-upload-html-curl.sh
 	
 curl-html:
