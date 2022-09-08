@@ -210,7 +210,6 @@ func uploadHandler(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 	}
 	m := NewEcho(json)
-
 	err = m.Write(conn)
 	if err != nil {
 		log.Println(err)
@@ -218,6 +217,9 @@ func uploadHandler(res http.ResponseWriter, req *http.Request) {
 	}
 
 	log.Printf("success notification to container launcher system:%s", filePath)
+
+	url := fmt.Sprintf("%s-%s.paas.niij.fml.org", applicationInfo.UserName, applicationInfo.ApplicationName)
+	fmt.Fprintf(res, "<a href='%s'>起動したアプリケーションのリンク</a><div>※起動には最低でも10秒以上かかります</div>", url)
 }
 
 func setupRoutes() {
