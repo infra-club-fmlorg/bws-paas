@@ -17,7 +17,7 @@ import (
 const (
 	BINARY               = "binary"
 	NODE_JS              = "nodejs"
-	HTML                 = "HTML"
+	HTML                 = "html"
 	DOCKER_LAUNCHER_SOCK = "/socket/docker_launcher.sock"
 	IMCOMINF_QUEUE_DIR   = "/queue/incoming"
 	DATETIME_FORMAT      = time.RFC3339Nano
