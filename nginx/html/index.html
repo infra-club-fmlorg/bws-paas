@@ -11,32 +11,99 @@
     </style>
   </head>
   <body>
-    <div>
-      <form action="/api/1/control-panel-backend/upload" method="post" enctype="multipart/form-data">
-        <div>
-          <label>userid:<input type="text" name="user_name" required></label>
-        </div>
-        <div>
-          <label>appname:<input type="text" name="application_name" required></label>
-        </div>
-        <div>
-          <label>runtime:
-            <select name="runtime" required>
-              <option value="binary" selected>Single Binary(Golang)</option>
-              <option value="python">Python</option>
-              <option value="nodejs">Node.js</option>
-            </select>
-          </label>
-        </div>
-        <div>
+    <h1>冴えないPaasにデプロイしよう！</h1>
+    <form action="/api/1/control-panel-backend/upload" method="post" enctype="multipart/form-data">
+      <div>
+        <label>ユーザー名:<input type="text" name="user_name" required></label>
+      </div>
+      <div>
+        <label>アプリ名:<input type="text" name="application_name" required></label>
+      </div>
+      <div>
+        <label>実行環境:
+          <select name="runtime" required>
+            <option value="binary" selected>シングルバイナリ</option>
+            <option value="html">HTML</option>
+            <option value="nodejs">Node.js</option>
+          </select>
+        </label>
+      </div>
+      <div>
+        <label>アプリケーションのファイル:
           <input type="file" name="application_file" accept="" required>
-          <div>Node.jsプロジェクトのデプロイファイルの生成コマンド</div>
-          <div>zip -r application {アプリケーションのルートディレクトリ} -x \*/.git/\* \*/node_modules/\*</div>
-        </div>
-        <div>
-          <input type="submit" value="送信する">
-        </div>
-      </form>
+        </label>
+      </div>
+      <div>
+        <input type="submit" value="送信する">
+      </div>
+    </form>
+    <div>
+      <h2>デプロイの流れ</h2>
+      <div>
+        <h3>シングルバイナリ（Golangなど）</h3>
+        <ul>
+          <li>コンパイル結果のバイナリをこのページからアップロードする</li>
+          <li>アプリ名は自由です</li>
+        </ul>
+      </div>
+      <div>
+        <h3>HTML</h3>
+        <ol>
+          <li>
+            <h4>プロジェクトを準備する</h4>
+            <p>index.htmlを生成する</p>
+          </li>
+          <li>
+            <h4>アプリケーションのzipを生成する</h4>
+            <ul>
+              <li style="color:red">以下のコマンドはアプリケーションのルートと同じディレクトリで実行してください</li>
+              <li>除外するべきディレクトリ（ローカルのキャッシュなど）がある場合は、ｘオプションにディレクトリを追加してください</li>
+            </ul>
+            <p>
+              <code>zip -r application {アプリケーションのルートディレクトリ} -x \*/.git/\*</code>
+            </p>
+          </li>
+          <li>
+            <h4>このページからZIPファイルをアップロードする</h4>
+            <ul>
+              <li style="color:red">アプリ名はアプリケーションのルートディレクトリと同じにする必要があります</li>
+              <li>現在ユーザー認証機能が未実装であり、ユーザー名やアプリ名が被る可能性があるため、ある程度長めにしておくことを推奨します</li>
+            </ul>
+          </li>
+        </ol>
+      </div>
+      <div>
+        <h3>Node.js</h3>
+        <ol>
+          <li>
+            <h4>プロジェクトを準備する</h4>
+            <ul>
+              <li>index.jsを起動用のスクリプトとする</li>
+              <li>
+                <p style="color:red">npm run startとnpm run buildを実行できるようnpmスクリプトを設定する</p>
+                <p>※buildが必要ない場合は空文字列を設定してください</p>
+              </li>
+            </ul>
+          </li>
+          <li>
+            <h4>アプリケーションのzipを生成する</h4>
+            <ul>
+              <li style="color:red">以下のコマンドはアプリケーションのルートと同じディレクトリで実行してください</li>
+              <li>除外するべきディレクトリ（ローカルのキャッシュなど）がある場合は、ｘオプションにディレクトリを追加してください</li>
+            </ul>
+            <p>
+              <code>zip -r application {アプリケーションのルートディレクトリ} -x \*/.git/\* \*/node_modules/\*</code>
+            </p>
+          </li>
+          <li>
+            <h4>このページからアプリケーションをアップロードする</h4>
+            <ul>
+              <li style="color:red">アプリ名はアプリケーションのルートディレクトリと同じにする必要があります</li>
+              <li>現在ユーザー認証機能が未実装であり、ユーザー名やアプリ名が被る可能性があるため、ある程度長めにしておくことを推奨します</li>
+            </ul>
+          </li>
+        </ol>
+      </div>
     </div>
   </body>
 </html>
