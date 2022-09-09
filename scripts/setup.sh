@@ -1,5 +1,5 @@
-if [ -z $(docker network list | grep -w application-network)]; then
-  docker network create application-network
+if test -z "$(docker network list | grep -w paas-network)"; then
+  docker network create paas-network
 fi
 
 mkdir -p ~/bws-paas-queue/active

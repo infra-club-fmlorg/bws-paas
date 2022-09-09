@@ -34,17 +34,19 @@ services:
       - 80:80
       - 443:443
     networks:
-      - application-network
+      - paas-network
+      - backend-network
     volumes:
       - type: bind
         source: /etc/letsencrypt
         target: /etc/letsencrypt
+        read_only: true
 
-  control-panel-backend:
-    container_name: 1-control-panel-backend
+  paas-backend:
+    container_name: 1-paas-backend
     build: ./paas-backend
     networks:
-      - application-network
+      - backend-network
     volumes:
       - type: bind
         source: ~/bws-paas-queue/incoming
@@ -53,15 +55,17 @@ services:
       - type: volume
         source: socket 
         target: /socket
+        read_only: false
 
-  docker-launcher:
+  container-control:
     build: ./container-control
     networks:
-      - application-network
+      - paas-network
     volumes:
       - type: bind
         source: ~/bws-paas-queue/incoming
         target: /queue/incoming
+        read_only: false
       - type: bind
         source: ~/bws-paas-queue/active
         target: /queue/active
@@ -76,17 +80,12 @@ services:
         source: /var/run/docker.sock
         target: /var/run/docker.sock
         read_only: true
-    command: [ "--network=application-network" ]
+    command: [ "--network=paas-network" ]
 
 networks:
-  application-network:
+  backend-network:
+  paas-network:
     external: true
 
 volumes:
-  # application-incoming:
-  #   external: true
-  #
-  # application-active:
-  #   external: true
-
   socket:
