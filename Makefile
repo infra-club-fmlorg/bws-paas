@@ -17,10 +17,10 @@ reset:
 	sh $(scripts)/reset.sh
 
 # 以下テスト用
-dev: test-reset
+dev:
 	docker-compose up --build
 
-dev-no-cache: test-reset
+dev-no-cache:
 	docker-compose up --build --no-cache
 
 test-reset:
