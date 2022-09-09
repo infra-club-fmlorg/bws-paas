@@ -32,11 +32,12 @@ services:
     build: ./nginx
     ports:
       - 80:80
+      - 443:443
     networks:
       - application-network
     volumes:
       - type: bind
-        source: /etc/letsencryp
+        source: /etc/letsencrypt
         target: /etc/letsencrypt
 
   control-panel-backend:
