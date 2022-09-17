@@ -8,11 +8,13 @@ import (
 	"os"
 )
 
-//go:embed static/default.conf
-var defaultConf []byte
-
 func ArchiveBuildContext(app *application.ApplicationInfo) (*bytes.Reader, error) {
-	dockerfile, dockerfileHeader, err := GenerateDockerfile(app)
+	// archive the Dockerfile
+	buf := new(bytes.Buffer)
+	tw := tar.NewWriter(buf)
+	defer tw.Close()
+
+	err := GenerateDockerfile(tw, app)
 	if err != nil {
 		return nil, err
 	}
@@ -23,20 +25,6 @@ func ArchiveBuildContext(app *application.ApplicationInfo) (*bytes.Reader, error
 		Size: int64(len(applicationFile)),
 	}
 
-	// archive the Dockerfile
-	buf := new(bytes.Buffer)
-	tw := tar.NewWriter(buf)
-	defer tw.Close()
-
-	err = tw.WriteHeader(dockerfileHeader)
-	if err != nil {
-		return nil, err
-	}
-	_, err = tw.Write(dockerfile)
-	if err != nil {
-		return nil, err
-	}
-
 	err = tw.WriteHeader(applicationHeader)
 	if err != nil {
 		return nil, err
@@ -44,22 +32,6 @@ func ArchiveBuildContext(app *application.ApplicationInfo) (*bytes.Reader, error
 	_, err = tw.Write(applicationFile)
 	if err != nil {
 		return nil, err
-	}
-
-	if app.Runtime == application.HTML {
-		defaultConfHeader := &tar.Header{
-			Name: "default.conf",
-			Size: int64(len(defaultConf)),
-		}
-
-		err = tw.WriteHeader(defaultConfHeader)
-		if err != nil {
-			return nil, err
-		}
-		_, err = tw.Write(defaultConf)
-		if err != nil {
-			return nil, err
-		}
 	}
 
 	return bytes.NewReader(buf.Bytes()), nil

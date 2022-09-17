@@ -9,11 +9,17 @@ import (
 	"text/template"
 )
 
-//go:embed dockerfile/html.Dockerfile
-var htmlDockerfiles embed.FS
+var (
+	//go:embed static/default.conf
+	htmlDefaultConf []byte
+
+	//go:embed dockerfile/html.Dockerfile
+	htmlDockerfiles embed.FS
+)
 
 const (
-	HTML_DOCKERFILE_PATH = "dockerfile/html.Dockerfile"
+	HTML_DOCKERFILE_PATH   = "dockerfile/html.Dockerfile"
+	HTML_DEFAULT_CONF_PATH = "default.conf"
 )
 
 type htmlDockerfileTemplate struct {
@@ -21,10 +27,10 @@ type htmlDockerfileTemplate struct {
 	ApplicationPath string
 }
 
-func generateHTMLDockerfile(app *application.ApplicationInfo) ([]byte, *tar.Header, error) {
+func generateHTMLDockerfile(tw *tar.Writer, app *application.ApplicationInfo) error {
 	template, err := template.ParseFS(htmlDockerfiles, HTML_DOCKERFILE_PATH)
 	if err != nil {
-		return nil, nil, err
+		return err
 	}
 
 	templateBuf := new(bytes.Buffer)
@@ -34,12 +40,34 @@ func generateHTMLDockerfile(app *application.ApplicationInfo) ([]byte, *tar.Head
 	})
 	dockerfile, err := ioutil.ReadAll(templateBuf)
 	if err != nil {
-		return nil, nil, err
+		return err
 	}
 
 	dockerfileHeader := &tar.Header{
 		Name: DOCKERFILE_BUILD_CONTEXT_PATH,
 		Size: int64(len(dockerfile)),
 	}
-	return dockerfile, dockerfileHeader, nil
+	err = tw.WriteHeader(dockerfileHeader)
+	if err != nil {
+		return err
+	}
+	_, err = tw.Write(dockerfile)
+	if err != nil {
+		return err
+	}
+
+	defaultConfHeader := &tar.Header{
+		Name: HTML_DEFAULT_CONF_PATH,
+		Size: int64(len(htmlDefaultConf)),
+	}
+	err = tw.WriteHeader(defaultConfHeader)
+	if err != nil {
+		return err
+	}
+	_, err = tw.Write(htmlDefaultConf)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -6,28 +6,26 @@ import (
 	"fmt"
 )
 
-func GenerateDockerfile(app *application.ApplicationInfo) ([]byte, *tar.Header, error) {
+func GenerateDockerfile(tw *tar.Writer, app *application.ApplicationInfo) error {
 	var (
-		dockerfile       []byte
-		dockerfileHeader *tar.Header
-		err              error
+		err error
 	)
 
 	switch app.Runtime {
 	case application.BINARY:
-		dockerfile, dockerfileHeader, err = generateBinaryDockerfile(app)
+		err = generateBinaryDockerfile(tw, app)
 	case application.NODE_JS:
-		dockerfile, dockerfileHeader, err = generateNodeJSDockerfile(app)
+		err = generateNodeJSDockerfile(tw, app)
 	case application.HTML:
-		dockerfile, dockerfileHeader, err = generateHTMLDockerfile(app)
+		err = generateHTMLDockerfile(tw, app)
 	default:
-		return nil, nil, fmt.Errorf("error: runtime not supported")
+		return fmt.Errorf("error: runtime not supported")
 	}
 
 	if err != nil {
-		return nil, nil, err
+		return err
 	}
 
-	return dockerfile, dockerfileHeader, nil
+	return nil
 
 }
